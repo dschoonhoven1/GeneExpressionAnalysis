@@ -1,0 +1,64 @@
+---
+title: "Gene Expression Project"
+author: "Fenny and Daniëlle"
+date: "2023-04-26"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Hippocampal subfield transcriptome analysis in schizophrenia psychosis
+```{r}
+library(dplyr)
+library(affy)
+library(scales)
+```
+
+```{r}
+counts_data <- "Sample_Subfields_Counts.txt"
+counts <- read.table(counts_data, header = T)
+head(counts)
+
+dim(counts)
+str(counts)
+```
+
+```{r}
+control_ca1 <- c(1:13)
+case_ca1 <- c(14:26)
+control_ca3 <- c(27:39)
+case_ca3 <- c(40:52)
+control_dg <- c(53:65)
+case_dg <- c(66:78)
+
+boxplot(log2(counts[control_ca1] + 1), outline = F, cex.names = 0.2)
+boxplot(log2(counts[case_ca1] + 1), outline = F, cex.names = 0.2)
+boxplot(log2(counts[control_ca3] + 1), outline = F, cex.names = 0.2)
+boxplot(log2(counts[case_ca3] + 1), outline = F, cex.names = 0.2)
+boxplot(log2(counts[control_DG] + 1), outline = F, cex.names = 0.2)
+boxplot(log2(counts[case_DG] + 1), outline = F, cex.lab = 0.2, col = "lightblue", las = 2)
+
+```
+```{r}
+myColors <- hue_pal()(4)
+
+plotDensity(log2(counts + 0.1), col=rep(myColors, each=3),
+            lty=c(1:ncol(counts)), xlab='Log2(count)',
+            main='Expression Distribution')
+
+legend('topright', names(counts), lty=c(1:ncol(counts)),
+       col=rep(myColors, each=3))
+abline(v=-1.5, lwd=1, col='red', lty=2)
+```
+
+```{r}
+barplot(colSums(counts[control_ca1]) / 1e6, col = )
+barplot(colSums(counts[control_ca1]) / 1e6, col = )
+barplot(colSums(counts[control_ca3]) / 1e6, col = )
+barplot(colSums(counts[control_ca1]) / 1e6, col = )
+barplot(colSums(counts[control_DG]) / 1e6, col = )
+barplot(colSums(counts[control_ca1]) / 1e6, col = )
+```
+
