@@ -11,19 +11,91 @@ knitr::opts_chunk$set(echo = TRUE)
 
 # Hippocampal subfield transcriptome analysis in schizophrenia psychosis
 ```{r}
+library(tidyr)
 library(dplyr)
 library(affy)
 library(scales)
+library(ggplot2)
+library('DESeq2')
 ```
 
+
 ```{r}
-counts_data <- "Sample_Subfields_Counts.txt"
-counts <- read.table(counts_data, header = T)
+count_data <- "Sample_Subfields_Counts.txt"
+counts <- read.table(file = count_data, header = TRUE)
 head(counts)
 
 dim(counts)
-str(counts)
+#str(counts)
+
+control_CA1 <- c(1:13)
+case_CA1 <- c(14:26)
+control_CA3 <- c(27:39)
+case_CA3 <- c(40:52)
+control_DG <- c(53:65)
+case_DG <- c(66:78)
+
+
+counts_CA1 <- counts[, 1:26]
+counts_CA1
+counts_CA3 <- counts[, 27:52]
+counts_CA3
+counts_DG <- counts[, 53:78]
+counts_DG
 ```
+
+```{r}
+counts_CA1_tidy <- pivot_longer(data = counts_CA1,
+             cols=1:26,
+             #names_pattern="(CA1_CTL|CA1_SZ).",
+             names_to ="sample",
+             values_to = "value")
+head(counts_CA1_tidy)
+
+counts_CA3_tidy <- pivot_longer(data = counts_CA3,
+             cols=1:26,
+             #names_pattern="(CA1_CTL|CA1_SZ).",
+             names_to ="sample",
+             values_to = "value")
+head(counts_CA3_tidy)
+
+counts_DG_tidy <- pivot_longer(data = counts_DG,
+             cols=1:26,
+             #names_pattern="(CA1_CTL|CA1_SZ).",
+             names_to ="sample",
+             values_to = "value")
+head(counts_DG_tidy)
+```
+
+
+```{r}
+counts_CA1_tidy$log2 <- log2(counts_CA1_tidy$value + 1)
+counts_CA3_tidy$log2 <- log2(counts_CA3_tidy$value + 1)
+counts_DG_tidy$log2 <- log2(counts_DG_tidy$value + 1)
+
+ggplot(data = counts_CA1_tidy, mapping = aes(x = sample, y = log2))+
+geom_boxplot()+
+  scale_x_discrete(guide = guide_axis(angle = 90))
+
+sums <- colSums(counts_CA1)/1e6
+CA1_sequence_depth = data.frame(sample=names(sums), depth=sums)
+CA1_sequence_depth %>% ggplot(mapping = aes(x = sample, y=sums)) + geom_col() +
+   scale_x_discrete(guide = guide_axis(angle = 90))
+
+ggplot(data = counts_CA3_tidy, mapping = aes(x = sample, y = log2))+
+geom_boxplot()+
+  scale_x_discrete(guide = guide_axis(angle = 90))
+
+
+
+ggplot(data = counts_DG_tidy, mapping = aes(x = sample, y = log2))+
+geom_boxplot()+
+scale_x_discrete(guide = guide_axis(angle = 90))
+
+
+```
+
+
 
 ```{r}
 control_ca1 <- c(1:13)
@@ -37,8 +109,8 @@ boxplot(log2(counts[control_ca1] + 1), outline = F, cex.names = 0.2)
 boxplot(log2(counts[case_ca1] + 1), outline = F, cex.names = 0.2)
 boxplot(log2(counts[control_ca3] + 1), outline = F, cex.names = 0.2)
 boxplot(log2(counts[case_ca3] + 1), outline = F, cex.names = 0.2)
-boxplot(log2(counts[control_DG] + 1), outline = F, cex.names = 0.2)
-boxplot(log2(counts[case_DG] + 1), outline = F, cex.lab = 0.2, col = "lightblue", las = 2)
+boxplot(log2(counts[control_dg] + 1), outline = F, cex.names = 0.2)
+boxplot(log2(counts[case_dg] + 1), outline = F, cex.lab = 0.2, col = "lightblue", las = 2)
 
 ```
 ```{r}
@@ -55,10 +127,67 @@ abline(v=-1.5, lwd=1, col='red', lty=2)
 
 ```{r}
 barplot(colSums(counts[control_ca1]) / 1e6, col = )
-barplot(colSums(counts[control_ca1]) / 1e6, col = )
+barplot(colSums(counts[case_ca1]) / 1e6, col = )
 barplot(colSums(counts[control_ca3]) / 1e6, col = )
-barplot(colSums(counts[control_ca1]) / 1e6, col = )
-barplot(colSums(counts[control_DG]) / 1e6, col = )
-barplot(colSums(counts[control_ca1]) / 1e6, col = )
+barplot(colSums(counts[case_ca3]) / 1e6, col = )
+barplot(colSums(counts[control_dg]) / 1e6, col = )
+barplot(colSums(counts[case_dg]) / 1e6, col = , las = 2)
 ```
 
+
+```{r}
+(ddsMat <- DESeqDataSetFromMatrix(countData = counts,
+                                  colData = data.frame(samples = names(counts)),
+                                  design = ~ 1))
+
+# Perform normalization
+rld.dds <- vst(ddsMat)
+# 'Extract' normalized values
+rld <- assay(rld.dds)
+sampledists <- dist( t( rld ))
+```
+
+```{r}
+annotation <- data.frame(subfield = factor(rep(1:3, each = 26), 
+                                          labels = c("CA1", "CA3", "DG")),
+                         type = factor(rep(rep(1:2, each = 13), 3),
+                                         labels = c("control", "schizophrenia")))
+                         
+# Set the rownames of the annotation dataframe to the sample names (required)
+rownames(annotation) <- names(counts)
+```
+
+```{r}
+library('PoiClaClu')
+# Note: uses the raw-count data, PoissonDistance performs normalization
+# set by the 'type' parameter (uses DESeq)
+dds <- assay(ddsMat)
+poisd <- PoissonDistance( t(dds), type = "deseq")
+# Extract the matrix with distances
+samplePoisDistMatrix <- as.matrix(poisd$dd)
+# Calculate the MDS and get the X- and Y-coordinates
+mdsPoisData <- data.frame( cmdscale(samplePoisDistMatrix) )
+
+# And set some better readable names for the columns
+names(mdsPoisData) <- c('x_coord', 'y_coord')
+```
+
+
+```{r}
+groups <- factor(rep(1:6, each=13), 
+                 labels = c("CA1_CTL", "CA1_SZ", "CA3_CTL", "CA3_SZ", "DG_CTL", "DG_SZ"))
+coldata <- names(counts)
+
+# Create the plot using ggplot
+ggplot(mdsPoisData, aes(x_coord, y_coord, color = groups, label = ":-)")) + 
+  geom_text(size = 10) +
+  ggtitle('Multi Dimensional Scaling') +
+  labs(x = "Poisson Distance", y = "Poisson Distance") +
+  theme_bw()
+```
+
+
+TODOs voor kwaliteitscontrole:
+- normaliseren met DESeq2 vst()
+- annotation dataframe maken (zie 3.4.3)
+- MDS (eerst in 1 plot)
