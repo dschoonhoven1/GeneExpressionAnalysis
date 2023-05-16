@@ -1,8 +1,10 @@
 ---
 title: "Gene Expression Project"
 author: "Fenny and Daniëlle"
-date: "2023-04-26"
-output: html_document
+date: '2023-04-26'
+output:
+  pdf_document: default
+  html_document: default
 ---
 
 ```{r setup, include=FALSE}
@@ -17,13 +19,18 @@ library(affy)
 library(scales)
 library(ggplot2)
 library('DESeq2')
+library('PoiClaClu')
 ```
 
+The count data is loaded into R.
 
+Table 1: Raw counts data
 ```{r}
 count_data <- "Sample_Subfields_Counts.txt"
 counts <- read.table(file = count_data, header = TRUE)
 head(counts)
+
+
 
 dim(counts)
 #str(counts)
@@ -37,13 +44,16 @@ case_DG <- c(66:78)
 
 
 counts_CA1 <- counts[, 1:26]
-counts_CA1
+#counts_CA1
 counts_CA3 <- counts[, 27:52]
-counts_CA3
+#counts_CA3
 counts_DG <- counts[, 53:78]
-counts_DG
+#counts_DG
 ```
 
+The data of the counts was split based on the hippocampal subfield and tidied using tidyr (table 2-4).
+
+Table 2: Tidy CA1 data
 ```{r}
 counts_CA1_tidy <- pivot_longer(data = counts_CA1,
              cols=1:26,
@@ -51,14 +61,20 @@ counts_CA1_tidy <- pivot_longer(data = counts_CA1,
              names_to ="sample",
              values_to = "value")
 head(counts_CA1_tidy)
+```
 
+Table 3: Tidy CA3 data
+```{r}
 counts_CA3_tidy <- pivot_longer(data = counts_CA3,
              cols=1:26,
              #names_pattern="(CA1_CTL|CA1_SZ).",
              names_to ="sample",
              values_to = "value")
 head(counts_CA3_tidy)
+```
 
+Table 4: Tidy DG data
+```{r}
 counts_DG_tidy <- pivot_longer(data = counts_DG,
              cols=1:26,
              #names_pattern="(CA1_CTL|CA1_SZ).",
@@ -91,8 +107,6 @@ geom_boxplot()+
 ggplot(data = counts_DG_tidy, mapping = aes(x = sample, y = log2))+
 geom_boxplot()+
 scale_x_discrete(guide = guide_axis(angle = 90))
-
-
 ```
 
 
@@ -105,12 +119,12 @@ case_ca3 <- c(40:52)
 control_dg <- c(53:65)
 case_dg <- c(66:78)
 
-boxplot(log2(counts[control_ca1] + 1), outline = F, cex.names = 0.2)
-boxplot(log2(counts[case_ca1] + 1), outline = F, cex.names = 0.2)
-boxplot(log2(counts[control_ca3] + 1), outline = F, cex.names = 0.2)
-boxplot(log2(counts[case_ca3] + 1), outline = F, cex.names = 0.2)
-boxplot(log2(counts[control_dg] + 1), outline = F, cex.names = 0.2)
-boxplot(log2(counts[case_dg] + 1), outline = F, cex.lab = 0.2, col = "lightblue", las = 2)
+boxplot(log2(counts[control_ca1] + 1), outline = T, cex.names = 0.2, col = "green", las = 2)
+boxplot(log2(counts[case_ca1] + 1), outline = T, cex.names = 0.2, col = "blue", las = 2)
+boxplot(log2(counts[control_ca3] + 1), outline = T, cex.names = 0.2, col = "grey", las = 2)
+boxplot(log2(counts[case_ca3] + 1), outline = T, cex.names = 0.2, col = "cyan", las = 2)
+boxplot(log2(counts[control_dg] + 1), outline = T, cex.names = 0.2, col = "red", las = 2)
+boxplot(log2(counts[case_dg] + 1), outline = T, cex.lab = 0.2, col = "yellow", las = 2)
 
 ```
 ```{r}
@@ -126,12 +140,12 @@ abline(v=-1.5, lwd=1, col='red', lty=2)
 ```
 
 ```{r}
-barplot(colSums(counts[control_ca1]) / 1e6, col = )
-barplot(colSums(counts[case_ca1]) / 1e6, col = )
-barplot(colSums(counts[control_ca3]) / 1e6, col = )
-barplot(colSums(counts[case_ca3]) / 1e6, col = )
-barplot(colSums(counts[control_dg]) / 1e6, col = )
-barplot(colSums(counts[case_dg]) / 1e6, col = , las = 2)
+barplot(colSums(counts[control_ca1]) / 1e6, col = "green")
+barplot(colSums(counts[case_ca1]) / 1e6, col = "blue")
+barplot(colSums(counts[control_ca3]) / 1e6, col = "grey", las =2)
+barplot(colSums(counts[case_ca3]) / 1e6, col = "cadetblue2")
+barplot(colSums(counts[control_dg]) / 1e6, col = "indianred2")
+barplot(colSums(counts[case_dg]) / 1e6, col = "khaki2", las = 2)
 ```
 
 
@@ -158,7 +172,7 @@ rownames(annotation) <- names(counts)
 ```
 
 ```{r}
-library('PoiClaClu')
+
 # Note: uses the raw-count data, PoissonDistance performs normalization
 # set by the 'type' parameter (uses DESeq)
 dds <- assay(ddsMat)
@@ -179,11 +193,24 @@ groups <- factor(rep(1:6, each=13),
 coldata <- names(counts)
 
 # Create the plot using ggplot
-ggplot(mdsPoisData, aes(x_coord, y_coord, color = groups, label = ":-)")) + 
-  geom_text(size = 10) +
+ggplot(mdsPoisData, aes(x_coord, y_coord, color = groups, label = coldata)) + 
+  geom_text(size = 3) +
+  scale_colour_manual(values=c("green", "blue", "grey", "cyan", "red", "yellow"))+
   ggtitle('Multi Dimensional Scaling') +
   labs(x = "Poisson Distance", y = "Poisson Distance") +
   theme_bw()
+```
+```{r}
+count_nooutlier <- counts[ ,-38]
+
+
+
+annotation1 <- data.frame(subfield = factor(rep(1:2, each=c(13, 13, 12), 
+                                          labels = c("CA1", "CA1", "CA3", "CA3", "DG", "DG"))),
+                         type = factor(rep(1:2, each=c(13, 13, 12),
+                                         labels = c("control", "schizophrenia", "control", "schizophrenia", "control", "schizophrenia"))))
+                         
+rownames(annotation1) <- names(count_nooutlier)
 ```
 
 
