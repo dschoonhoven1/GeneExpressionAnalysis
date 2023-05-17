@@ -140,12 +140,12 @@ abline(v=-1.5, lwd=1, col='red', lty=2)
 ```
 
 ```{r}
-barplot(colSums(counts[control_ca1]) / 1e6, col = "green")
-barplot(colSums(counts[case_ca1]) / 1e6, col = "blue")
-barplot(colSums(counts[control_ca3]) / 1e6, col = "grey", las =2)
-barplot(colSums(counts[case_ca3]) / 1e6, col = "cadetblue2")
-barplot(colSums(counts[control_dg]) / 1e6, col = "indianred2")
-barplot(colSums(counts[case_dg]) / 1e6, col = "khaki2", las = 2)
+barplot(colSums(counts[control_ca1]) / 1e6, col = "#D6F6DD")
+barplot(colSums(counts[case_ca1]) / 1e6, col = "#DAC4F7")
+barplot(colSums(counts[control_ca3]) / 1e6, col = "#CCCCCC", las =2)
+barplot(colSums(counts[case_ca3]) / 1e6, col = "#ACECF7")
+barplot(colSums(counts[control_dg]) / 1e6, col = "#F4989C")
+barplot(colSums(counts[case_dg]) / 1e6, col = "#EBD2B4", las = 2)
 ```
 
 
@@ -192,6 +192,8 @@ groups <- factor(rep(1:6, each=13),
                  labels = c("CA1_CTL", "CA1_SZ", "CA3_CTL", "CA3_SZ", "DG_CTL", "DG_SZ"))
 coldata <- names(counts)
 
+color_palette <- c("#D6F6DD", "#DAC4F7", "#CCCCCC", "#ACECF7", "#F4989C", "#EBD2B4")
+
 # Create the plot using ggplot
 ggplot(mdsPoisData, aes(x_coord, y_coord, color = groups, label = coldata)) + 
   geom_text(size = 3) +
@@ -201,20 +203,89 @@ ggplot(mdsPoisData, aes(x_coord, y_coord, color = groups, label = coldata)) +
   theme_bw()
 ```
 ```{r}
+groups <- factor(rep(1:6, each=13), 
+                 labels = c("CA1_CTL", "CA1_SZ", "CA3_CTL", "CA3_SZ", "DG_CTL", "DG_SZ"))
+coldata <- names(counts)
+
+mds_removed_CTL_12 <- mdsPoisData %>%
+filter(x_coord > -20000) %>%
+ggplot(aes(x_coord, y_coord, color = groups, label = coldata)) + 
+  geom_text(size = 3) +
+  scale_colour_manual(values=c("green", "blue", "grey", "cyan", "red", "yellow"))+
+  ggtitle('Multi Dimensional Scaling') +
+  labs(x = "Poisson Distance", y = "Poisson Distance") +
+  theme_bw()
+```
+
+
+
+```{r}
+(ddsMat_rm_CA3_CTL_12 <- DESeqDataSetFromMatrix(countData = count_nooutlier,
+                                  colData = data.frame(samples = names(count_nooutlier)),
+                                  design = ~ 1))
+
+# Perform normalization
+rld.dds <- vst(ddsMat)
+# 'Extract' normalized values
+rld <- assay(rld.dds)
+sampledists <- dist( t( rld ))
+```
+
+```{r}
 count_nooutlier <- counts[ ,-38]
 
 
 
-annotation1 <- data.frame(subfield = factor(rep(1:2, each=c(13, 13, 12), 
-                                          labels = c("CA1", "CA1", "CA3", "CA3", "DG", "DG"))),
-                         type = factor(rep(1:2, each=c(13, 13, 12),
-                                         labels = c("control", "schizophrenia", "control", "schizophrenia", "control", "schizophrenia"))))
-                         
-rownames(annotation1) <- names(count_nooutlier)
+col1 <-rep(c("CA1", "CA3", "DG"), times = c(26, 25, 26))
+col2 <-rep(c("control", "sz", "control", "sz", "control", "sz"), times = c(13, 13, 12, 13, 13, 13))
+ 
+annotation_rm_ctl12 <- data.frame(col1, col2)
+                        
+rownames(annotation_rm_ctl12) <- names(count_nooutlier)
 ```
 
+```{r}
+
+# Note: uses the raw-count data, PoissonDistance performs normalization
+# set by the 'type' parameter (uses DESeq)
+dds <- assay(ddsMat_rm_CA3_CTL_12)
+poisd <- PoissonDistance( t(dds), type = "deseq")
+# Extract the matrix with distances
+samplePoisDistMatrix <- as.matrix(poisd$dd)
+# Calculate the MDS and get the X- and Y-coordinates
+mdsPoisData_rm_CA3_CTL_12 <- data.frame( cmdscale(samplePoisDistMatrix) )
+
+# And set some better readable names for the columns
+names(mdsPoisData_rm_CA3_CTL_12 ) <- c('x_coord', 'y_coord')
+```
+
+```{r}
+groups <- factor(rep(c("CA1_CTL", "CA1_SZ", "CA3_CTL", "CA3_SZ", "DG_CTL", "DG_SZ"), times = c(13, 13, 12, 13, 13, 13)))
+coldata <- names(count_nooutlier)
+
+
+# Create the plot using ggplot
+ggplot(mdsPoisData_rm_CA3_CTL_12, aes(x_coord, y_coord, color = groups, label = ".")) + 
+  geom_text(size = 10) +
+  scale_colour_manual(values=c("green", "blue", "grey", "cyan", "red", "yellow"))+
+  ggtitle('Multi Dimensional Scaling') +
+  labs(x = "Poisson Distance", y = "Poisson Distance") +
+  theme_bw()
+```
 
 TODOs voor kwaliteitscontrole:
 - normaliseren met DESeq2 vst()
 - annotation dataframe maken (zie 3.4.3)
 - MDS (eerst in 1 plot)
+
+
+
+
+
+The raw counts data was normalized again by calculating the fragments per million mapped fragments (FPM), this is equal to CPM (counts per million). The log2 was calculated of these given values. 
+
+```{r}
+counts.fpm <- log2( (counts / (colSums(counts) / 1e6)) + 1 )
+```
+
+sva
