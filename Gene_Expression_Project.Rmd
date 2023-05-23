@@ -109,7 +109,7 @@ geom_boxplot()+
 scale_x_discrete(guide = guide_axis(angle = 90))
 ```
 
-
+The data is separated in control and case groups for each subfield and visualized by creating a boxplot for each group (figure 1-6).
 
 ```{r}
 control_ca1 <- c(1:13)
@@ -120,13 +120,35 @@ control_dg <- c(53:65)
 case_dg <- c(66:78)
 
 boxplot(log2(counts[control_ca1] + 1), outline = T, cex.names = 0.2, col = "green", las = 2)
+```
+Figure 1: Raw counts boxplot control group CA1
+
+```{r}
 boxplot(log2(counts[case_ca1] + 1), outline = T, cex.names = 0.2, col = "blue", las = 2)
+```
+Figure 2: Raw counts boxplot case group CA1
+
+```{r}
 boxplot(log2(counts[control_ca3] + 1), outline = T, cex.names = 0.2, col = "grey", las = 2)
+```
+Figure 3: Raw counts boxplot control group CA3
+
+```{r}
 boxplot(log2(counts[case_ca3] + 1), outline = T, cex.names = 0.2, col = "cyan", las = 2)
+```
+Figure 4: Raw counts boxplot case group CA3
+
+```{r}
 boxplot(log2(counts[control_dg] + 1), outline = T, cex.names = 0.2, col = "red", las = 2)
+```
+Figure 5: Raw counts boxplot control group DG
+
+```{r}
 boxplot(log2(counts[case_dg] + 1), outline = T, cex.lab = 0.2, col = "yellow", las = 2)
 
 ```
+Figure 6: Raw counts boxplot case group DG
+
 ```{r}
 myColors <- hue_pal()(4)
 
@@ -200,6 +222,10 @@ coldata <- names(counts)
 color_palette <- c("#D6F6DD", "#DAC4F7", "#CCCCCC", "#ACECF7", "#F4989C", "#EBD2B4")
 
 # Create the plot using ggplot
+<<<<<<< HEAD
+ggplot(mdsPoisData, aes(x_coord, y_coord, color = groups, label = ".")) + 
+  geom_text(size = 10, alpha = 0.7) +
+=======
 ggplot(mdsPoisData, aes(x_coord, y_coord, color = groups, label = coldata)) + 
   geom_text(size = 3) +
   scale_colour_manual(values=c("green", "blue", "grey", "cyan", "red", "yellow"))+
@@ -218,6 +244,7 @@ filter(x_coord > -20000) %>%
 ggplot(aes(x_coord, y_coord, color = groups, label = coldata)) + 
   geom_text(size = 3) +
   scale_colour_manual(values=c("green", "blue", "grey", "cyan", "red", "yellow"))+
+>>>>>>> e12410f73da824c7934302186610299626c0d498
   ggtitle('Multi Dimensional Scaling') +
   labs(x = "Poisson Distance", y = "Poisson Distance") +
   theme_bw()
@@ -295,6 +322,7 @@ The raw counts data was normalized again by calculating the fragments per millio
 counts.fpm <- log2( (counts / (colSums(counts) / 1e6)) + 1 )
 ```
 
+<<<<<<< HEAD
 ```{r}
 annotation$Group <- paste(annotation$Condition, annotation$Region, annotation$Drug, sep="_")
 dds <- DESeqDataSetFromMatrix(countData = counts,
@@ -332,3 +360,10 @@ deseq.volcano <- function(res, datasetName) {
 deseq.volcano(res = res, datasetName = "IPSC")
 ```
 
+=======
+sva
+
+sz_CA1_off - ctl_CA1: 57, 2
+
+sz_CA1_off - sz_CA1_on: 48, 1
+>>>>>>> 259d1e1ae10292bc1a3ad5dd095e44eb5afdcc8d
