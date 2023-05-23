@@ -179,8 +179,8 @@ groups <- factor(rep(1:6, each=13),
 coldata <- names(counts)
 
 # Create the plot using ggplot
-ggplot(mdsPoisData, aes(x_coord, y_coord, color = groups, label = ":-)")) + 
-  geom_text(size = 10) +
+ggplot(mdsPoisData, aes(x_coord, y_coord, color = groups, label = ".")) + 
+  geom_text(size = 10, alpha = 0.7) +
   ggtitle('Multi Dimensional Scaling') +
   labs(x = "Poisson Distance", y = "Poisson Distance") +
   theme_bw()
