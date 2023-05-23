@@ -162,14 +162,19 @@ sampledists <- dist( t( rld ))
 ```
 
 ```{r}
-annotation <- data.frame(subfield = factor(rep(1:3, each = 26), 
-                                          labels = c("CA1", "CA3", "DG")),
-                         type = factor(rep(rep(1:2, each = 13), 3),
-                                         labels = c("control", "schizophrenia")))
+#annotation <- data.frame(subfield = factor(rep(1:3, each = 26), 
+ #                                         labels = c("CA1", "CA3", "DG")),
+  #                       type = factor(rep(rep(1:2, each = 13), 3),
+   #                                      labels = c("control", "schizophrenia")))
                          
 # Set the rownames of the annotation dataframe to the sample names (required)
-rownames(annotation) <- names(counts)
+#rownames(annotation) <- names(counts)
 ```
+
+```{r}
+load("~/Documents/Capstone project/project/annotation.RData")
+```
+
 
 ```{r}
 
@@ -200,7 +205,8 @@ ggplot(mdsPoisData, aes(x_coord, y_coord, color = groups, label = coldata)) +
   scale_colour_manual(values=c("green", "blue", "grey", "cyan", "red", "yellow"))+
   ggtitle('Multi Dimensional Scaling') +
   labs(x = "Poisson Distance", y = "Poisson Distance") +
-  theme_bw()
+  theme_bw()+
+  labs(caption = "Figure: MDS plot")
 ```
 ```{r}
 groups <- factor(rep(1:6, each=13), 
@@ -265,12 +271,13 @@ coldata <- names(count_nooutlier)
 
 
 # Create the plot using ggplot
-ggplot(mdsPoisData_rm_CA3_CTL_12, aes(x_coord, y_coord, color = groups, label = ".")) + 
-  geom_text(size = 10) +
+ggplot(mdsPoisData_rm_CA3_CTL_12, aes(x_coord, y_coord, color = groups, label = coldata)) + 
+  geom_text(size = 2) +
   scale_colour_manual(values=c("green", "blue", "grey", "cyan", "red", "yellow"))+
   ggtitle('Multi Dimensional Scaling') +
   labs(x = "Poisson Distance", y = "Poisson Distance") +
-  theme_bw()
+  theme_bw()+
+  labs(caption = "Figure: MDS plot with outlier removed")
 ```
 
 TODOs voor kwaliteitscontrole:
@@ -288,4 +295,40 @@ The raw counts data was normalized again by calculating the fragments per millio
 counts.fpm <- log2( (counts / (colSums(counts) / 1e6)) + 1 )
 ```
 
-sva
+```{r}
+annotation$Group <- paste(annotation$Condition, annotation$Region, annotation$Drug, sep="_")
+dds <- DESeqDataSetFromMatrix(countData = counts,
+                              colData = annotation,
+                              design = ~ 0 + Group)
+dds <- DESeq(dds)
+resultsNames(dds)
+res <- results(dds, contrast = c("Group", "schizophrenia_CA3_ON", "control_CA3_OFF"), alpha = 0.05)
+summary(res)
+```
+
+
+volcano plat maken
+
+
+```{r}
+library(EnhancedVolcano)
+library(ggrepel)
+
+## Simple function for plotting a Volcano plot, returns a ggplot object
+deseq.volcano <- function(res, datasetName) {
+  return(EnhancedVolcano(res, x = 'log2FoldChange', y = 'padj',
+                         lab=rownames(res),
+                         title = paste(datasetName, "trisomic vs disomic"),
+                         subtitle = bquote(italic('FDR <= 0.05 and absolute FC >= 2')),
+                         # Change text and icon sizes
+                         labSize = 3, pointSize = 1.5, axisLabSize=10, titleLabSize=12,
+                         subtitleLabSize=8, captionLabSize=10,
+                         # Disable legend
+                         legendPosition = "none",
+                         # Set cutoffs
+                         pCutoff = 0.05, FCcutoff = 2))
+}
+
+deseq.volcano(res = res, datasetName = "IPSC")
+```
+
