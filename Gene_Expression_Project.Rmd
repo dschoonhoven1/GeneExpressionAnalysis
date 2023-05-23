@@ -1,8 +1,10 @@
 ---
 title: "Gene Expression Project"
 author: "Fenny and Daniëlle"
-date: "2023-04-26"
-output: html_document
+date: '2023-04-26'
+output:
+  pdf_document: default
+  html_document: default
 ---
 
 ```{r setup, include=FALSE}
@@ -17,13 +19,18 @@ library(affy)
 library(scales)
 library(ggplot2)
 library('DESeq2')
+library('PoiClaClu')
 ```
 
+The count data is loaded into R.
 
+Table 1: Raw counts data
 ```{r}
 count_data <- "Sample_Subfields_Counts.txt"
 counts <- read.table(file = count_data, header = TRUE)
 head(counts)
+
+
 
 dim(counts)
 #str(counts)
@@ -37,13 +44,16 @@ case_DG <- c(66:78)
 
 
 counts_CA1 <- counts[, 1:26]
-counts_CA1
+#counts_CA1
 counts_CA3 <- counts[, 27:52]
-counts_CA3
+#counts_CA3
 counts_DG <- counts[, 53:78]
-counts_DG
+#counts_DG
 ```
 
+The data of the counts was split based on the hippocampal subfield and tidied using tidyr (table 2-4).
+
+Table 2: Tidy CA1 data
 ```{r}
 counts_CA1_tidy <- pivot_longer(data = counts_CA1,
              cols=1:26,
@@ -51,14 +61,20 @@ counts_CA1_tidy <- pivot_longer(data = counts_CA1,
              names_to ="sample",
              values_to = "value")
 head(counts_CA1_tidy)
+```
 
+Table 3: Tidy CA3 data
+```{r}
 counts_CA3_tidy <- pivot_longer(data = counts_CA3,
              cols=1:26,
              #names_pattern="(CA1_CTL|CA1_SZ).",
              names_to ="sample",
              values_to = "value")
 head(counts_CA3_tidy)
+```
 
+Table 4: Tidy DG data
+```{r}
 counts_DG_tidy <- pivot_longer(data = counts_DG,
              cols=1:26,
              #names_pattern="(CA1_CTL|CA1_SZ).",
@@ -91,11 +107,9 @@ geom_boxplot()+
 ggplot(data = counts_DG_tidy, mapping = aes(x = sample, y = log2))+
 geom_boxplot()+
 scale_x_discrete(guide = guide_axis(angle = 90))
-
-
 ```
 
-
+The data is separated in control and case groups for each subfield and visualized by creating a boxplot for each group (figure 1-6).
 
 ```{r}
 control_ca1 <- c(1:13)
@@ -105,14 +119,36 @@ case_ca3 <- c(40:52)
 control_dg <- c(53:65)
 case_dg <- c(66:78)
 
-boxplot(log2(counts[control_ca1] + 1), outline = F, cex.names = 0.2)
-boxplot(log2(counts[case_ca1] + 1), outline = F, cex.names = 0.2)
-boxplot(log2(counts[control_ca3] + 1), outline = F, cex.names = 0.2)
-boxplot(log2(counts[case_ca3] + 1), outline = F, cex.names = 0.2)
-boxplot(log2(counts[control_dg] + 1), outline = F, cex.names = 0.2)
-boxplot(log2(counts[case_dg] + 1), outline = F, cex.lab = 0.2, col = "lightblue", las = 2)
+boxplot(log2(counts[control_ca1] + 1), outline = T, cex.names = 0.2, col = "green", las = 2)
+```
+Figure 1: Raw counts boxplot control group CA1
+
+```{r}
+boxplot(log2(counts[case_ca1] + 1), outline = T, cex.names = 0.2, col = "blue", las = 2)
+```
+Figure 2: Raw counts boxplot case group CA1
+
+```{r}
+boxplot(log2(counts[control_ca3] + 1), outline = T, cex.names = 0.2, col = "grey", las = 2)
+```
+Figure 3: Raw counts boxplot control group CA3
+
+```{r}
+boxplot(log2(counts[case_ca3] + 1), outline = T, cex.names = 0.2, col = "cyan", las = 2)
+```
+Figure 4: Raw counts boxplot case group CA3
+
+```{r}
+boxplot(log2(counts[control_dg] + 1), outline = T, cex.names = 0.2, col = "red", las = 2)
+```
+Figure 5: Raw counts boxplot control group DG
+
+```{r}
+boxplot(log2(counts[case_dg] + 1), outline = T, cex.lab = 0.2, col = "yellow", las = 2)
 
 ```
+Figure 6: Raw counts boxplot case group DG
+
 ```{r}
 myColors <- hue_pal()(4)
 
@@ -126,12 +162,12 @@ abline(v=-1.5, lwd=1, col='red', lty=2)
 ```
 
 ```{r}
-barplot(colSums(counts[control_ca1]) / 1e6, col = )
-barplot(colSums(counts[case_ca1]) / 1e6, col = )
-barplot(colSums(counts[control_ca3]) / 1e6, col = )
-barplot(colSums(counts[case_ca3]) / 1e6, col = )
-barplot(colSums(counts[control_dg]) / 1e6, col = )
-barplot(colSums(counts[case_dg]) / 1e6, col = , las = 2)
+barplot(colSums(counts[control_ca1]) / 1e6, col = "#D6F6DD")
+barplot(colSums(counts[case_ca1]) / 1e6, col = "#DAC4F7")
+barplot(colSums(counts[control_ca3]) / 1e6, col = "#CCCCCC", las =2)
+barplot(colSums(counts[case_ca3]) / 1e6, col = "#ACECF7")
+barplot(colSums(counts[control_dg]) / 1e6, col = "#F4989C")
+barplot(colSums(counts[case_dg]) / 1e6, col = "#EBD2B4", las = 2)
 ```
 
 
@@ -158,7 +194,7 @@ rownames(annotation) <- names(counts)
 ```
 
 ```{r}
-library('PoiClaClu')
+
 # Note: uses the raw-count data, PoissonDistance performs normalization
 # set by the 'type' parameter (uses DESeq)
 dds <- assay(ddsMat)
@@ -178,16 +214,109 @@ groups <- factor(rep(1:6, each=13),
                  labels = c("CA1_CTL", "CA1_SZ", "CA3_CTL", "CA3_SZ", "DG_CTL", "DG_SZ"))
 coldata <- names(counts)
 
+color_palette <- c("#D6F6DD", "#DAC4F7", "#CCCCCC", "#ACECF7", "#F4989C", "#EBD2B4")
+
 # Create the plot using ggplot
+<<<<<<< HEAD
 ggplot(mdsPoisData, aes(x_coord, y_coord, color = groups, label = ".")) + 
   geom_text(size = 10, alpha = 0.7) +
+=======
+ggplot(mdsPoisData, aes(x_coord, y_coord, color = groups, label = coldata)) + 
+  geom_text(size = 3) +
+  scale_colour_manual(values=c("green", "blue", "grey", "cyan", "red", "yellow"))+
+  ggtitle('Multi Dimensional Scaling') +
+  labs(x = "Poisson Distance", y = "Poisson Distance") +
+  theme_bw()
+```
+```{r}
+groups <- factor(rep(1:6, each=13), 
+                 labels = c("CA1_CTL", "CA1_SZ", "CA3_CTL", "CA3_SZ", "DG_CTL", "DG_SZ"))
+coldata <- names(counts)
+
+mds_removed_CTL_12 <- mdsPoisData %>%
+filter(x_coord > -20000) %>%
+ggplot(aes(x_coord, y_coord, color = groups, label = coldata)) + 
+  geom_text(size = 3) +
+  scale_colour_manual(values=c("green", "blue", "grey", "cyan", "red", "yellow"))+
+>>>>>>> e12410f73da824c7934302186610299626c0d498
   ggtitle('Multi Dimensional Scaling') +
   labs(x = "Poisson Distance", y = "Poisson Distance") +
   theme_bw()
 ```
 
 
+
+```{r}
+(ddsMat_rm_CA3_CTL_12 <- DESeqDataSetFromMatrix(countData = count_nooutlier,
+                                  colData = data.frame(samples = names(count_nooutlier)),
+                                  design = ~ 1))
+
+# Perform normalization
+rld.dds <- vst(ddsMat)
+# 'Extract' normalized values
+rld <- assay(rld.dds)
+sampledists <- dist( t( rld ))
+```
+
+```{r}
+count_nooutlier <- counts[ ,-38]
+
+
+
+col1 <-rep(c("CA1", "CA3", "DG"), times = c(26, 25, 26))
+col2 <-rep(c("control", "sz", "control", "sz", "control", "sz"), times = c(13, 13, 12, 13, 13, 13))
+ 
+annotation_rm_ctl12 <- data.frame(col1, col2)
+                        
+rownames(annotation_rm_ctl12) <- names(count_nooutlier)
+```
+
+```{r}
+
+# Note: uses the raw-count data, PoissonDistance performs normalization
+# set by the 'type' parameter (uses DESeq)
+dds <- assay(ddsMat_rm_CA3_CTL_12)
+poisd <- PoissonDistance( t(dds), type = "deseq")
+# Extract the matrix with distances
+samplePoisDistMatrix <- as.matrix(poisd$dd)
+# Calculate the MDS and get the X- and Y-coordinates
+mdsPoisData_rm_CA3_CTL_12 <- data.frame( cmdscale(samplePoisDistMatrix) )
+
+# And set some better readable names for the columns
+names(mdsPoisData_rm_CA3_CTL_12 ) <- c('x_coord', 'y_coord')
+```
+
+```{r}
+groups <- factor(rep(c("CA1_CTL", "CA1_SZ", "CA3_CTL", "CA3_SZ", "DG_CTL", "DG_SZ"), times = c(13, 13, 12, 13, 13, 13)))
+coldata <- names(count_nooutlier)
+
+
+# Create the plot using ggplot
+ggplot(mdsPoisData_rm_CA3_CTL_12, aes(x_coord, y_coord, color = groups, label = ".")) + 
+  geom_text(size = 10) +
+  scale_colour_manual(values=c("green", "blue", "grey", "cyan", "red", "yellow"))+
+  ggtitle('Multi Dimensional Scaling') +
+  labs(x = "Poisson Distance", y = "Poisson Distance") +
+  theme_bw()
+```
+
 TODOs voor kwaliteitscontrole:
 - normaliseren met DESeq2 vst()
 - annotation dataframe maken (zie 3.4.3)
 - MDS (eerst in 1 plot)
+
+
+
+
+
+The raw counts data was normalized again by calculating the fragments per million mapped fragments (FPM), this is equal to CPM (counts per million). The log2 was calculated of these given values. 
+
+```{r}
+counts.fpm <- log2( (counts / (colSums(counts) / 1e6)) + 1 )
+```
+
+sva
+
+sz_CA1_off - ctl_CA1: 57, 2
+
+sz_CA1_off - sz_CA1_on: 48, 1
