@@ -9,6 +9,7 @@ output:
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(cache = TRUE)
 ```
 
 # Hippocampal subfield transcriptome analysis in schizophrenia psychosis
@@ -214,6 +215,7 @@ names(mdsPoisData) <- c('x_coord', 'y_coord')
 ```
 
 
+
 ```{r}
 groups <- factor(rep(1:6, each=13), 
                  labels = c("CA1_CTL", "CA1_SZ", "CA3_CTL", "CA3_SZ", "DG_CTL", "DG_SZ"))
@@ -222,10 +224,7 @@ coldata <- names(counts)
 color_palette <- c("#D6F6DD", "#DAC4F7", "#CCCCCC", "#ACECF7", "#F4989C", "#EBD2B4")
 
 # Create the plot using ggplot
-<<<<<<< HEAD
-ggplot(mdsPoisData, aes(x_coord, y_coord, color = groups, label = ".")) + 
-  geom_text(size = 10, alpha = 0.7) +
-=======
+
 ggplot(mdsPoisData, aes(x_coord, y_coord, color = groups, label = coldata)) + 
   geom_text(size = 3) +
   scale_colour_manual(values=c("green", "blue", "grey", "cyan", "red", "yellow"))+
@@ -233,21 +232,6 @@ ggplot(mdsPoisData, aes(x_coord, y_coord, color = groups, label = coldata)) +
   labs(x = "Poisson Distance", y = "Poisson Distance") +
   theme_bw()+
   labs(caption = "Figure: MDS plot")
-```
-```{r}
-groups <- factor(rep(1:6, each=13), 
-                 labels = c("CA1_CTL", "CA1_SZ", "CA3_CTL", "CA3_SZ", "DG_CTL", "DG_SZ"))
-coldata <- names(counts)
-
-mds_removed_CTL_12 <- mdsPoisData %>%
-filter(x_coord > -20000) %>%
-ggplot(aes(x_coord, y_coord, color = groups, label = coldata)) + 
-  geom_text(size = 3) +
-  scale_colour_manual(values=c("green", "blue", "grey", "cyan", "red", "yellow"))+
->>>>>>> e12410f73da824c7934302186610299626c0d498
-  ggtitle('Multi Dimensional Scaling') +
-  labs(x = "Poisson Distance", y = "Poisson Distance") +
-  theme_bw()
 ```
 
 
@@ -276,6 +260,11 @@ annotation_rm_ctl12 <- data.frame(col1, col2)
                         
 rownames(annotation_rm_ctl12) <- names(count_nooutlier)
 ```
+
+```{r}
+annotatio_rm_CA3
+```
+
 
 ```{r}
 
@@ -322,7 +311,6 @@ The raw counts data was normalized again by calculating the fragments per millio
 counts.fpm <- log2( (counts / (colSums(counts) / 1e6)) + 1 )
 ```
 
-<<<<<<< HEAD
 ```{r}
 annotation$Group <- paste(annotation$Condition, annotation$Region, annotation$Drug, sep="_")
 dds <- DESeqDataSetFromMatrix(countData = counts,
@@ -337,6 +325,7 @@ summary(res)
 
 volcano plat maken
 
+A vulcano plot was made using the results from deseq
 
 ```{r}
 library(EnhancedVolcano)
@@ -346,7 +335,7 @@ library(ggrepel)
 deseq.volcano <- function(res, datasetName) {
   return(EnhancedVolcano(res, x = 'log2FoldChange', y = 'padj',
                          lab=rownames(res),
-                         title = paste(datasetName, "trisomic vs disomic"),
+                         title = paste(datasetName, ""),
                          subtitle = bquote(italic('FDR <= 0.05 and absolute FC >= 2')),
                          # Change text and icon sizes
                          labSize = 3, pointSize = 1.5, axisLabSize=10, titleLabSize=12,
@@ -357,13 +346,13 @@ deseq.volcano <- function(res, datasetName) {
                          pCutoff = 0.05, FCcutoff = 2))
 }
 
-deseq.volcano(res = res, datasetName = "IPSC")
+deseq.volcano(res = res, datasetName = "")
 ```
 
-=======
+
 sva
 
 sz_CA1_off - ctl_CA1: 57, 2
 
 sz_CA1_off - sz_CA1_on: 48, 1
->>>>>>> 259d1e1ae10292bc1a3ad5dd095e44eb5afdcc8d
+
