@@ -265,19 +265,6 @@ ggplot(mdsPoisData, aes(x_coord, y_coord, color = groups, label = coldata)) +
 
 ```{r}
 count_nooutlier <- counts[ ,-38]
-
-mdsPoisData %>%
-filter(x_coord > -20000) %>%
-ggplot(aes(x = x_coord, y = y_coord, color = groups, label = coldata)) + 
-  geom_text(size = 3) +
-  scale_colour_manual(values=c("green", "blue", "grey", "cyan", "red", "yellow"))+
-  ggtitle('Multi Dimensional Scaling') +
-  labs(x = "Poisson Distance", y = "Poisson Distance") +
-  theme_bw()
-```
-
-
-
 col1 <-rep(c("CA1", "CA3", "DG"), times = c(26, 25, 26))
 col2 <-rep(c("control", "sz", "control", "sz", "control", "sz"), times = c(13, 13, 12, 13, 13, 13))
  
@@ -301,7 +288,7 @@ sampledists <- dist( t( rld ))
 
 
 ```{r}
-annotatio_rm_CA3
+annotation_rm_CA3
 ```
 
 
@@ -340,10 +327,6 @@ TODOs voor kwaliteitscontrole:
 - annotation dataframe maken (zie 3.4.3)
 - MDS (eerst in 1 plot)
 
-
-
-
-
 The raw counts data was normalized again by calculating the fragments per million mapped fragments (FPM), this is equal to CPM (counts per million). The log2 was calculated of these given values. 
 
 ```{r}
@@ -358,13 +341,13 @@ dds <- DESeqDataSetFromMatrix(countData = counts,
 dds <- DESeq(dds)
 resultsNames(dds)
 res_CA1 <- results(dds, contrast = c("Group", "schizophrenia_CA1_ON", "schizophrenia_CA1_OFF"), alpha = 0.05)
-summary(res1)
+summary(res_CA1)
 
 res_CA3 <- results(dds, contrast = c("Group", "schizophrenia_CA3_ON", "schizophrenia_CA3_OFF"), alpha = 0.05)
-summary(res2)
+summary(res_CA3)
 
 res_DG <- results(dds, contrast = c("Group", "schizophrenia_DG_ON", "schizophrenia_DG_OFF"), alpha = 0.05)
-summary(res3)
+summary(res_DG)
 ```
 
 
@@ -422,16 +405,6 @@ Figure: Venn diagram showing the overlap of differently regulated genes between 
 
 sz_CA1_off - ctl_CA1: 57, 2
 
-<<<<<<< HEAD
-sz_CA1_off - sz_CA1_on: 48, 1
-
-
-
-
-references
-
-Ivanova, E. M., Kandilarova, S. M., Lukanov, T. I., Naumova, E. J., Akabalieva, K. V., & Milanova, V. K. (2021). NGS-based mtDNA Profiling Could Reveal Genetic Alterations in Schizophrenia. Current topics in medicinal chemistry, 21(11), 938–948. https://doi.org/10.2174/1568026621666210521155500
-=======
 sz_CA1_on - sz_CA1_off: 1, 48
 
 sz_CA1_on - ctl_CA1: 0, 1
@@ -455,5 +428,6 @@ sz_dg_on - ctl_dg: 144, 12
 MTRNR2 gene stands out in the volcano plot of each comparison. This is a neuroprotective gene that protects against neuronal death induced by alzheimer. Often shows higher expression in Schizophrenia cases than in control subjects. Was not mentioned in the article.
 
 
->>>>>>> 259d1e1ae10292bc1a3ad5dd095e44eb5afdcc8d
->>>>>>> d979666c45ca24be7239c2e7abf9747b5582fee4
+references
+
+Ivanova, E. M., Kandilarova, S. M., Lukanov, T. I., Naumova, E. J., Akabalieva, K. V., & Milanova, V. K. (2021). NGS-based mtDNA Profiling Could Reveal Genetic Alterations in Schizophrenia. Current topics in medicinal chemistry, 21(11), 938–948. https://doi.org/10.2174/1568026621666210521155500
