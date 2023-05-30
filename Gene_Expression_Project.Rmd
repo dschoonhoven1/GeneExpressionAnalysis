@@ -120,36 +120,42 @@ case_ca3 <- c(40:52)
 control_dg <- c(53:65)
 case_dg <- c(66:78)
 
+par(cex = 0.8)
 boxplot(log2(counts[control_ca1] + 1), outline = T, cex.names = 0.2, col = "green", las = 2)
 ```
 Figure 1: Raw counts boxplot control group CA1
 
 ```{r}
+par(cex = 0.8)
 boxplot(log2(counts[case_ca1] + 1), outline = T, cex.names = 0.2, col = "blue", las = 2)
 ```
 Figure 2: Raw counts boxplot case group CA1
 
 ```{r}
+par(cex = 0.8)
 boxplot(log2(counts[control_ca3] + 1), outline = T, cex.names = 0.2, col = "grey", las = 2)
 ```
 Figure 3: Raw counts boxplot control group CA3
 
 ```{r}
+par(cex = 0.8)
 boxplot(log2(counts[case_ca3] + 1), outline = T, cex.names = 0.2, col = "cyan", las = 2)
 ```
 Figure 4: Raw counts boxplot case group CA3
 
 ```{r}
+par(cex = 0.8)
 boxplot(log2(counts[control_dg] + 1), outline = T, cex.names = 0.2, col = "red", las = 2)
 ```
 Figure 5: Raw counts boxplot control group DG
 
 ```{r}
-boxplot(log2(counts[case_dg] + 1), outline = T, cex.lab = 0.2, col = "yellow", las = 2)
-
+par(cex = 0.8)
+boxplot(log2(counts[case_dg] + 1), outline = T, col = "yellow", las = 2)
 ```
 Figure 6: Raw counts boxplot case group DG
 
+A density plot is made for all the samples to visualize the distribution of the log2 of the count data.
 ```{r}
 myColors <- hue_pal()(4)
 
@@ -161,17 +167,40 @@ legend('topright', names(counts), lty=c(1:ncol(counts)),
        col=rep(myColors, each=3))
 abline(v=-1.5, lwd=1, col='red', lty=2)
 ```
+Figure 7: Density plot of count distribution for all samples 
+
+Barplots are created for each control and case group in which the total raw count is shown of each sample.
+```{r}
+barplot(colSums(counts[control_ca1]) / 1e6, col = "#D6F6DD", las = 2, cex.names = 0.8)
+```
+Figure 8: Barplot showing the total reads per million for each subject in the control group for subfield CA1
 
 ```{r}
-barplot(colSums(counts[control_ca1]) / 1e6, col = "#D6F6DD")
-barplot(colSums(counts[case_ca1]) / 1e6, col = "#DAC4F7")
-barplot(colSums(counts[control_ca3]) / 1e6, col = "#CCCCCC", las =2)
-barplot(colSums(counts[case_ca3]) / 1e6, col = "#ACECF7")
-barplot(colSums(counts[control_dg]) / 1e6, col = "#F4989C")
-barplot(colSums(counts[case_dg]) / 1e6, col = "#EBD2B4", las = 2)
+barplot(colSums(counts[case_ca1]) / 1e6, col = "#DAC4F7", las = 2, cex.names = 0.8)
 ```
+Figure 9: Barplot showing the total reads per million for each subject in the case group for subfield CA1
 
+```{r}
+barplot(colSums(counts[control_ca3]) / 1e6, col = "#CCCCCC", las = 2, cex.names = 0.8)
+```
+Figure 10: Barplot showing the total reads per million for each subject in the control group for subfield CA3
 
+```{r}
+barplot(colSums(counts[case_ca3]) / 1e6, col = "#ACECF7", las = 2, cex.names = 0.8)
+```
+Figure 11: Barplot showing the total reads per million for each subject in the case group for subfield CA3
+
+```{r}
+barplot(colSums(counts[control_dg]) / 1e6, col = "#F4989C", las = 2, cex.names = 0.8)
+```
+Figure 12: Barplot showing the total reads per million for each subject in the control group for subfield DG
+
+```{r}
+barplot(colSums(counts[case_dg]) / 1e6, col = "#EBD2B4", las = 2, cex.names = 0.8)
+```
+Figure 13: Barplot showing the total reads per million for each subject in the case group for subfield DG
+
+Several DESeq2 functions are utilized to transform the raw read count data and calculating sample distances. A DESeqDataSet is made using the count data and an annotation which consists of the sample names. The dataset is used to transform the data into normalized data.
 ```{r}
 (ddsMat <- DESeqDataSetFromMatrix(countData = counts,
                                   colData = data.frame(samples = names(counts)),
@@ -236,6 +265,16 @@ ggplot(mdsPoisData, aes(x_coord, y_coord, color = groups, label = coldata)) +
 
 ```{r}
 count_nooutlier <- counts[ ,-38]
+
+mdsPoisData %>%
+filter(x_coord > -20000) %>%
+ggplot(aes(x = x_coord, y = y_coord, color = groups, label = coldata)) + 
+  geom_text(size = 3) +
+  scale_colour_manual(values=c("green", "blue", "grey", "cyan", "red", "yellow"))+
+  ggtitle('Multi Dimensional Scaling') +
+  labs(x = "Poisson Distance", y = "Poisson Distance") +
+  theme_bw()
+```
 
 
 
@@ -383,6 +422,7 @@ Figure: Venn diagram showing the overlap of differently regulated genes between 
 
 sz_CA1_off - ctl_CA1: 57, 2
 
+<<<<<<< HEAD
 sz_CA1_off - sz_CA1_on: 48, 1
 
 
@@ -391,3 +431,29 @@ sz_CA1_off - sz_CA1_on: 48, 1
 references
 
 Ivanova, E. M., Kandilarova, S. M., Lukanov, T. I., Naumova, E. J., Akabalieva, K. V., & Milanova, V. K. (2021). NGS-based mtDNA Profiling Could Reveal Genetic Alterations in Schizophrenia. Current topics in medicinal chemistry, 21(11), 938–948. https://doi.org/10.2174/1568026621666210521155500
+=======
+sz_CA1_on - sz_CA1_off: 1, 48
+
+sz_CA1_on - ctl_CA1: 0, 1
+
+
+sz_ca3_off - ctl_ca3: 26, 2
+
+sz_ca3_on - sz_ca3_off: 171, 190
+
+sz_ca3_on - ctl_ca3: 31, 358
+
+
+sz_dg_off - ctl_dg: 11, 3
+
+sz_dg_on - sz_dg_off: 86, 14
+
+sz_dg_on - ctl_dg: 144, 12
+
+
+
+MTRNR2 gene stands out in the volcano plot of each comparison. This is a neuroprotective gene that protects against neuronal death induced by alzheimer. Often shows higher expression in Schizophrenia cases than in control subjects. Was not mentioned in the article.
+
+
+>>>>>>> 259d1e1ae10292bc1a3ad5dd095e44eb5afdcc8d
+>>>>>>> d979666c45ca24be7239c2e7abf9747b5582fee4
