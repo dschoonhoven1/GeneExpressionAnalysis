@@ -224,7 +224,7 @@ sampledists <- dist( t( rld ))
 ```
 
 ```{r}
-load("~/Documents/Capstone project/project/annotation.RData")
+load("annotation.RData")
 ```
 
 
@@ -333,6 +333,11 @@ The raw counts data was normalized again by calculating the fragments per millio
 counts.fpm <- log2( (counts / (colSums(counts) / 1e6)) + 1 )
 ```
 
+
+A new group was made in the annotation data frame which contains information about the condition of the sample(control or schizophrenic), which hippocampal subfield was examined and whether or not that person uses anti-psychotic medication. This was done to make it easier to compare these different groups.
+
+Using DESeq a comparison was made between the schizophrenic patients who are on anti-psychotic medication and those who are not. A comparison was also made between the schizophrenia group who dont use madiacation and the healthy contol group. These two comparisons were made for each hippocampal subfield using an adjusted p-value of 0.05. The results of these comparisions gives information about the amount of genes that are up or down regulated.
+
 ```{r}
 annotation$Group <- paste(annotation$Condition, annotation$Region, annotation$Drug, sep="_")
 dds <- DESeqDataSetFromMatrix(countData = counts,
@@ -340,20 +345,28 @@ dds <- DESeqDataSetFromMatrix(countData = counts,
                               design = ~ 0 + Group)
 dds <- DESeq(dds)
 resultsNames(dds)
-res_CA1 <- results(dds, contrast = c("Group", "schizophrenia_CA1_ON", "schizophrenia_CA1_OFF"), alpha = 0.05)
-summary(res_CA1)
+res_CA1_drug <- results(dds, contrast = c("Group", "schizophrenia_CA1_ON", "schizophrenia_CA1_OFF"), alpha = 0.05)
+summary(res_CA1_drug)
 
-res_CA3 <- results(dds, contrast = c("Group", "schizophrenia_CA3_ON", "schizophrenia_CA3_OFF"), alpha = 0.05)
-summary(res_CA3)
+res_CA1_SZ_CTL <- results(dds, contrast = c("Group", "schizophrenia_CA1_OFF", "control_CA1_OFF"), alpha = 0.05)
+summary(res_CA1_SZ_CTL)
 
-res_DG <- results(dds, contrast = c("Group", "schizophrenia_DG_ON", "schizophrenia_DG_OFF"), alpha = 0.05)
-summary(res_DG)
+res_CA3_drug <- results(dds, contrast = c("Group", "schizophrenia_CA3_ON", "schizophrenia_CA3_OFF"), alpha = 0.05)
+summary(res_CA3_drug)
+
+res_CA3_SZ_CTL <- results(dds, contrast = c("Group", "schizophrenia_CA3_OFF", "control_CA3_OFF"), alpha = 0.05)
+summary(res_CA3_SZ_CTL)
+
+res_DG_drug <- results(dds, contrast = c("Group", "schizophrenia_DG_ON", "schizophrenia_DG_OFF"), alpha = 0.05)
+summary(res_DG_drug)
+
+res_DG_SZ_CTL <- results(dds, contrast = c("Group", "schizophrenia_DG_OFF", "control_DG_OFF"), alpha = 0.05)
+summary(res_DG_SZ_CTL)
 ```
 
+For each hippocampal subfield a volcano plot was made using the results from DESeq to show the difference in gene expression between schizophrenic patient who use medication and those who do not.
 
-volcano plot maken
-
-A volcano plot was made using the results from deseq
+In a volcano plot all genes are visualized but only the DEG's are highlighted. To determine which gene is a DEG a threshold of 0.05 was set for the adjusted p-value and 2 for the fold-change.
 
 ```{r}
 library(EnhancedVolcano)
@@ -374,19 +387,21 @@ deseq.volcano <- function(res, datasetName) {
                          pCutoff = 0.05, FCcutoff = 2))
 }
 
-deseq.volcano(res = res_CA1, datasetName = "CA1")
-deseq.volcano(res = res_CA3, datasetName = "CA3")
-deseq.volcano(res = res_DG, datasetName = "DG")
+deseq.volcano(res = res_CA1_drug, datasetName = "CA1")
+deseq.volcano(res = res_CA3_drug, datasetName = "CA3")
+deseq.volcano(res = res_DG_drug, datasetName = "DG")
 ```
 
 
 ```{r}
 pval_threshold <- 0.05
-CA1.degs <- row.names(res_CA1[which(res_CA1$padj <= pval_threshold), ])
-CA3.degs <- row.names(res_CA3[which(res_CA3$padj <= pval_threshold), ])
-DG.degs <- row.names(res_DG[which(res_DG$padj <= pval_threshold), ])
+CA1_drug.degs <- row.names(res_CA1_drug[which(res_CA1_drug$padj <= pval_threshold), ])
+CA3_drug.degs <- row.names(res_CA3_drug[which(res_CA3_drug$padj <= pval_threshold), ])
+DG_drug.degs <- row.names(res_DG_drug[which(res_DG_drug$padj <= pval_threshold), ])
 
-
+CA1_SZ_CTL.degs <- row.names(res_CA1_SZ_CTL[which(res_CA1_SZ_CTL$padj <= pval_threshold), ])
+CA3_SZ_CTL.degs <- row.names(res_CA3_SZ_CTL[which(res_CA3_SZ_CTL$padj <= pval_threshold), ])
+DG_SZ_CTL.degs <- row.names(res_DG_SZ_CTL[which(res_DG_SZ_CTL$padj <= pval_threshold), ])
 
 ```
 
@@ -395,13 +410,29 @@ DG.degs <- row.names(res_DG[which(res_DG$padj <= pval_threshold), ])
 library(gplots)
 # Create a Venn-diagram given just the list of gene-names for both sets
 
-
-
-venn( list(CA1=CA1.degs,CA3=CA3.degs,DG=DG.degs ) )
-  
+venn( list(CA1=CA1_drug.degs,CA3=CA3_drug.degs,DG=DG_drug.degs ) )
 ```
-Figure: Venn diagram showing the overlap of differently regulated genes between schizophrenia patients ON and OFF medication in the three hippocampal subfields: CA1, CA3 and DG
+Figure: Venn diagram showing the overlap of DEG's between schizophrenia patients ON and OFF medication in the three hippocampal subfields: CA1, CA3 and DG
 
+
+```{r}
+library(VennDiagram)
+grid.newpage()
+draw.triple.venn(area1 = 100, area2 = 361, area3 = 49, n12 = 4, n23 = 2, n13 = 1, 
+    n123 = 0, category = c("DG", "CA3", "CA1"), lty = "blank", scale=T,
+    fill = c("skyblue", "pink1", "mediumorchid"))
+```
+
+```{r}
+venn( list(CA1_SZ_OFF_ON=CA1_drug.degs, CA1_SZ_OFF_CTL=CA1_SZ_CTL.degs ) )
+venn( list(CA3_SZ_OFF_ON=CA3_drug.degs, CA3_SZ_OFF_CTL=CA3_SZ_CTL.degs ) )
+venn( list(DG_SZ_OFF_ON=DG_drug.degs, DG_SZ_OFF_CTL=DG_SZ_CTL.degs ) )
+```
+Figure: Venn diagram showing the overlap of DEG's between schizophrenia patients ON and OFF medication and between schizophrenia patients without mediaction and the healty control for hippocampal subfiel CA1
+
+Figure: Venn diagram showing the overlap of DEG's between schizophrenia patients ON and OFF medication and between schizophrenia patients without mediaction and the healty control for hippocampal subfiel CA3
+
+Figure: Venn diagram showing the overlap of DEG's between schizophrenia patients ON and OFF medication and between schizophrenia patients without mediaction and the healty control for hippocampal subfiel DG
 
 sz_CA1_off - ctl_CA1: 57, 2
 
@@ -422,6 +453,7 @@ sz_dg_off - ctl_dg: 11, 3
 sz_dg_on - sz_dg_off: 86, 14
 
 sz_dg_on - ctl_dg: 144, 12
+
 
 
 
