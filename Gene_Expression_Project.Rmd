@@ -200,17 +200,18 @@ barplot(colSums(counts[case_dg]) / 1e6, col = "#EBD2B4", las = 2, cex.names = 0.
 ```
 Figure 13: Barplot showing the total reads per million for each subject in the case group for subfield DG
 
-Several DESeq2 functions are utilized to transform the raw read count data and calculating sample distances. A DESeqDataSet is made using the count data and an annotation which consists of the sample names. The dataset is used to transform the data into normalized data.
+Several DESeq2 functions are utilized to transform the raw read count data and calculating sample distances. A DESeqDataSet is made using the count data and an annotation which consists of the sample names. The dataset is used to transform the data into normalized data by using the vst function to correct for the variation in raw count values between samples. The normalized data is extracted using the assay function. The t-function is used to transpose the matrix of the normalized values and the distance is calculated using the dist function.
 ```{r}
 (ddsMat <- DESeqDataSetFromMatrix(countData = counts,
                                   colData = data.frame(samples = names(counts)),
                                   design = ~ 1))
 
 # Perform normalization
-rld.dds <- vst(ddsMat)
+#rld.dds <- vst(ddsMat)
 # 'Extract' normalized values
-rld <- assay(rld.dds)
-sampledists <- dist( t( rld ))
+#rld <- assay(rld.dds)
+#sampledists <- dist( t( rld ))
+#head(sampledists)
 ```
 
 ```{r}
@@ -223,11 +224,12 @@ sampledists <- dist( t( rld ))
 #rownames(annotation) <- names(counts)
 ```
 
+The data is annotated in a dataframe with names containing control and case samples, and whether the case samples were derived from subjects on or off medication. This also enabled the identification of the sample types.
 ```{r}
-load("~/Documents/Capstone project/project/annotation.RData")
+load("annotation.RData")
 ```
 
-
+To visualize the calculated distances, Multi-Dimensional Scaling (MDS) is done, which uses Poisson distances. These distances are calculated using PoiClaClu functions. To do this, the count data is extracted from the DESeq dataset using the assay function. The t-function is used to transpose the matrix of the values, and the Poisson distance is calculated using the PoissonDistance function, which also normalizes the data.
 ```{r}
 
 # Note: uses the raw-count data, PoissonDistance performs normalization
@@ -244,7 +246,7 @@ names(mdsPoisData) <- c('x_coord', 'y_coord')
 ```
 
 
-
+The annotated data is separated into groups depending on whether the sample was obtained from a control or case subject, whether they were on or off medication, and the hippocampal subfield of interest (CA1, CA3 or DG). These groups were labeled accordingly. This separated data was used to plot a graph showing the MDS data.
 ```{r}
 groups <- factor(rep(1:6, each=13), 
                  labels = c("CA1_CTL", "CA1_SZ", "CA3_CTL", "CA3_SZ", "DG_CTL", "DG_SZ"))
@@ -288,7 +290,7 @@ sampledists <- dist( t( rld ))
 
 
 ```{r}
-annotation_rm_CA3
+#annotation_rm_CA3
 ```
 
 
