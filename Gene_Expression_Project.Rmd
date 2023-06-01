@@ -288,12 +288,9 @@ rld <- assay(rld.dds)
 sampledists <- dist( t( rld ))
 ```
 
-
-
 ```{r}
 #annotation_rm_CA3
 ```
-
 
 ```{r}
 
@@ -326,21 +323,14 @@ ggplot(mdsPoisData_rm_CA3_CTL_12, aes(x_coord, y_coord, color = groups, label = 
 ```
 Figure 15: Plot showing Multi-Dimensional Scaling of Poisson Distance for all samples except for outlier
 
-TODOs voor kwaliteitscontrole:
-- normaliseren met DESeq2 vst()
-- annotation dataframe maken (zie 3.4.3)
-- MDS (eerst in 1 plot)
-
 The raw counts data was normalized again by calculating the fragments per million mapped fragments (FPM), this is equal to CPM (counts per million). The log2 was calculated of these given values. 
-
 ```{r}
 counts.fpm <- log2( (counts / (colSums(counts) / 1e6)) + 1 )
 ```
 
+A new group is made in the annotation data frame which contains information about the condition of the samples (control or schizophrenic), which hippocampal subfield is examined and whether the patient was on anti-psychotic medication or not. This is done to make it easier to compare these different groups.
 
-A new group was made in the annotation data frame which contains information about the condition of the sample(control or schizophrenic), which hippocampal subfield was examined and whether or not that person uses anti-psychotic medication. This was done to make it easier to compare these different groups.
-
-Using DESeq a comparison was made between the schizophrenic patients who are on anti-psychotic medication and those who are not. A comparison was also made between the schizophrenia group who do not use medication and the healthy control group. These two comparisons were made for each hippocampal subfield using an adjusted p-value of 0.05. The results of these comparisons gives information about the amount of genes that are up or down regulated.
+Using DESeq a comparison is made between the schizophrenic patients who were on anti-psychotic medication and those who were not. A comparison is also made between the schizophrenia group off medication and the healthy control group of each subfield. These two comparisons are made for each hippocampal subfield using an adjusted p-value of 0.05. The results of these comparisons give information about the amount of genes that are up or down regulated.
 
 ```{r}
 annotation$Group <- paste(annotation$Condition, annotation$Region, annotation$Drug, sep="_")
@@ -368,10 +358,7 @@ res_DG_SZ_CTL <- results(dds, contrast = c("Group", "schizophrenia_DG_OFF", "con
 summary(res_DG_SZ_CTL)
 ```
 
-For each hippocampal subfield a volcano plot was made using the results from DESeq to show the difference in gene expression between schizophrenic patient who use medication and those who do not.
-
-In a volcano plot all genes are visualized but only the DEG's are highlighted. To determine which gene is a DEG a threshold of 0.05 was set for the adjusted p-value and 2 for the fold-change.
-
+For each hippocampal subfield, a volcano plot is made using the results from DESeq to show the difference in gene expression between schizophrenic patient who were on medication and those who were not. In the volcano plot all genes are visualized but only the DEG's are highlighted. To determine which gene is a DEG, a threshold of 0.05 is set for the adjusted p-value and 2 for the fold-change (FC).
 ```{r}
 library(EnhancedVolcano)
 library(ggrepel)
@@ -392,10 +379,19 @@ deseq.volcano <- function(res, datasetName) {
 }
 
 deseq.volcano(res = res_CA1_drug, datasetName = "CA1")
+```
+Figure 16: Volcano plot showing the gene expression of subfield CA1 resulting from the comparison of patients on and off drugs
+The expression values are plotted with the -log10 p-value on the y-axis and the log fold-change on the x-axis. The plot is separated into according to the set thresholds with a different color for each section. The grey area shows the genes with expressions below both thresholds, the green area shows the genes with expressions only above the FC threshold, the genes with only high p-values are shown in blue, and in red, the significant DEG's or the genes with expressions above both thresholds are shown.
+
+```{r}
 deseq.volcano(res = res_CA3_drug, datasetName = "CA3")
+```
+Figure 17: Volcano plot showing the gene expression of subfield CA3 resulting from the comparison of patients on and off drugs
+
+```{r}
 deseq.volcano(res = res_DG_drug, datasetName = "DG")
 ```
-
+Figure 17: Volcano plot showing the gene expression of subfield DG resulting from the comparison of patients on and off drugs
 
 ```{r}
 pval_threshold <- 0.05
