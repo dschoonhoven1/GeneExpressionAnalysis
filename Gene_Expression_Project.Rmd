@@ -458,9 +458,48 @@ sz_dg_on - ctl_dg: 144, 12
 
 
 
+go enrichment
+```{r}
+library(org.Hs.eg.db)
+hs <- org.Hs.eg.db
+my.symbols <- CA3_drug.degs
+ENTREZ <- select(hs, 
+       keys = my.symbols,
+       columns = c("ENTREZID", "SYMBOL"),
+       keytype = "SYMBOL") %>%
+  filter(!is.na(ENTREZID))
+
+entrez_ID <- ENTREZ$ENTREZID
+```
+
+
+```{r}
+library(DOSE)
+edo <- enrichDGN(entrez_ID)
+```
+
+
+```{r}
+library(enrichplot)
+barplot(edo, showCategory=20) 
+```
+```{r}
+ggo <- groupGO(gene     = entrez_ID,
+               OrgDb    = org.Hs.eg.db,
+               ont      = "CC",
+               level    = 3,
+               readable = TRUE)
+
+head(ggo)
+
+goplot(ggo)
+
+```
 
 MTRNR2 gene stands out in the volcano plot of each comparison. This is a neuroprotective gene that protects against neuronal death induced by alzheimer. Often shows higher expression in Schizophrenia cases than in control subjects. Was not mentioned in the article.
 
+
+write.table(CA3_drug.degs, file = "CA3_degs.txt", row.names = F, quote = F)
 
 references
 
