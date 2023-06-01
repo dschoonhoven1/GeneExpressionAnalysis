@@ -340,7 +340,7 @@ counts.fpm <- log2( (counts / (colSums(counts) / 1e6)) + 1 )
 
 A new group was made in the annotation data frame which contains information about the condition of the sample(control or schizophrenic), which hippocampal subfield was examined and whether or not that person uses anti-psychotic medication. This was done to make it easier to compare these different groups.
 
-Using DESeq a comparison was made between the schizophrenic patients who are on anti-psychotic medication and those who are not. A comparison was also made between the schizophrenia group who dont use madiacation and the healthy contol group. These two comparisons were made for each hippocampal subfield using an adjusted p-value of 0.05. The results of these comparisions gives information about the amount of genes that are up or down regulated.
+Using DESeq a comparison was made between the schizophrenic patients who are on anti-psychotic medication and those who are not. A comparison was also made between the schizophrenia group who do not use medication and the healthy control group. These two comparisons were made for each hippocampal subfield using an adjusted p-value of 0.05. The results of these comparisons gives information about the amount of genes that are up or down regulated.
 
 ```{r}
 annotation$Group <- paste(annotation$Condition, annotation$Region, annotation$Drug, sep="_")
@@ -432,11 +432,11 @@ venn( list(CA1_SZ_OFF_ON=CA1_drug.degs, CA1_SZ_OFF_CTL=CA1_SZ_CTL.degs ) )
 venn( list(CA3_SZ_OFF_ON=CA3_drug.degs, CA3_SZ_OFF_CTL=CA3_SZ_CTL.degs ) )
 venn( list(DG_SZ_OFF_ON=DG_drug.degs, DG_SZ_OFF_CTL=DG_SZ_CTL.degs ) )
 ```
-Figure: Venn diagram showing the overlap of DEG's between schizophrenia patients ON and OFF medication and between schizophrenia patients without mediaction and the healty control for hippocampal subfiel CA1
+Figure: Venn diagram showing the overlap of DEG's between schizophrenia patients ON and OFF medication and between schizophrenia patients without medication and the healthy control for hippocampal subfield CA1
 
-Figure: Venn diagram showing the overlap of DEG's between schizophrenia patients ON and OFF medication and between schizophrenia patients without mediaction and the healty control for hippocampal subfiel CA3
+Figure: Venn diagram showing the overlap of DEG's between schizophrenia patients ON and OFF medication and between schizophrenia patients without medication and the healthy control for hippocampal subfield CA3
 
-Figure: Venn diagram showing the overlap of DEG's between schizophrenia patients ON and OFF medication and between schizophrenia patients without mediaction and the healty control for hippocampal subfiel DG
+Figure: Venn diagram showing the overlap of DEG's between schizophrenia patients ON and OFF medication and between schizophrenia patients without medication and the healthy control for hippocampal subfield DG
 
 sz_CA1_off - ctl_CA1: 57, 2
 
