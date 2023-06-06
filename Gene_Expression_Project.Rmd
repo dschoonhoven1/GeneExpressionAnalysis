@@ -502,7 +502,19 @@ MTRNR2 gene stands out in the volcano plot of each comparison. This is a neuropr
 write.table(CA3_drug.degs, file = "CA3_degs.txt", row.names = F, quote = F)
 
 
+```{r}
+GO_data <- "GO.txt"
+GO_CA3 <- read.table(file = GO_data, header = TRUE, sep = "\t", dec = ".")
+head(GO_CA3)
 
+GO_CA3$log10 <- -log10(GO_CA3$q.value.FDR.B.H)
+
+names <- GO_CA3$Name
+
+GO_CA3 %>%
+  ggplot(aes(x= log10, y= Hit.Count.in.Query.List, color = Category, label = Name))+
+  geom_point()
+```
 
 
 references
