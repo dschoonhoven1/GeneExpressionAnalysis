@@ -3,8 +3,10 @@ title: "Gene Expression Project"
 author: "Fenny and Daniëlle"
 date: '2023-04-26'
 output:
-  pdf_document: default
   html_document: default
+  pdf_document: default
+header-includes: 
+  - \usepackage{subfig}
 ---
 
 ```{r setup, include=FALSE}
@@ -21,6 +23,7 @@ library(scales)
 library(ggplot2)
 library('DESeq2')
 library('PoiClaClu')
+library(knitr)
 ```
 
 The count data is loaded into R.
@@ -123,6 +126,41 @@ case_dg <- c(66:78)
 par(cex = 0.8)
 boxplot(log2(counts[control_ca1] + 1), outline = T, cex.names = 0.2, col = "green", las = 2)
 ```
+
+
+
+
+
+
+```{r, fig.subcap=c("A. CA1 Control", "B. CA1 Case")}
+par(mfcol = c(1,2))
+par(cex = 0.8)
+boxplot(log2(counts[control_ca1] + 1), outline = T, cex.names = 0.2, col = "green", las = 2)
+boxplot(log2(counts[case_ca1] + 1), outline = T, cex.names = 0.2, col = "blue", las = 2)
+```
+
+```{r, fig.subcap=c("C. CA3 Control", "D. CA3 Case")}
+par(mfcol = c(1,2))
+par(cex = 0.8)
+boxplot(log2(counts[control_ca3] + 1), outline = T, cex.names = 0.2, col = "grey", las = 2)
+boxplot(log2(counts[case_ca3] + 1), outline = T, cex.names = 0.2, col = "cyan", las = 2)
+
+```
+
+```{r fig-sub-2, fig.cap = "Figure 1: Raw counts boxplots", fig.subcap = c("CA1 Control", "CA1 Case","CA3 Control", "CA3 Case", "DG Control", "DG Case"), out.width = "50%", fig.height=8}
+#par(mfcol = c(3,2))
+#par(cex = 0.8)
+if (identical(knitr::pandoc_to(), 'latex')) knit_hooks$set(plot = hook_plot_tex)
+boxplot(log2(counts[control_ca1] + 1), outline = T, cex.names = 0.2, col = "green", las = 2)
+boxplot(log2(counts[case_ca1] + 1), outline = T, cex.names = 0.2, col = "blue", las = 2)
+boxplot(log2(counts[control_ca3] + 1), outline = T, cex.names = 0.2, col = "grey", las = 2)
+boxplot(log2(counts[case_ca3] + 1), outline = T, cex.names = 0.2, col = "cyan", las = 2)
+boxplot(log2(counts[control_dg] + 1), outline = T, col = "red", las = 2)
+boxplot(log2(counts[case_dg] + 1), outline = T, col = "yellow", las = 2)
+
+```
+
+
 Figure 1: Raw counts boxplot control group CA1
 
 ```{r}
@@ -170,10 +208,19 @@ abline(v=-1.5, lwd=1, col='red', lty=2)
 Figure 7: Density plot of count distribution for all samples 
 
 Barplots are created for each control and case group in which the total raw count is shown of each sample.
-```{r}
+```{r, fig.cap="Figure 8: Barplot showing the total reads per million for each subject in the control group for subfield CA1", fig.dim=16,8, fig.subcap=c("CA1 Control", "CA1 Case", "CA3 Control", "CA3 Case", "DG Control", "DG Case")}
+par(mfcol = c(2,3))
 barplot(colSums(counts[control_ca1]) / 1e6, col = "#D6F6DD", las = 2, cex.names = 0.8)
+barplot(colSums(counts[case_ca1]) / 1e6, col = "#DAC4F7", las = 2, cex.names = 0.8)
+barplot(colSums(counts[control_ca3]) / 1e6, col = "#CCCCCC", las = 2, cex.names = 0.8)
+barplot(colSums(counts[case_ca3]) / 1e6, col = "#ACECF7", las = 2, cex.names = 0.8)
+barplot(colSums(counts[control_dg]) / 1e6, col = "#F4989C", las = 2, cex.names = 0.8)
+barplot(colSums(counts[case_dg]) / 1e6, col = "#EBD2B4", las = 2, cex.names = 0.8)
+
+
+
+
 ```
-Figure 8: Barplot showing the total reads per million for each subject in the control group for subfield CA1
 
 ```{r}
 barplot(colSums(counts[case_ca1]) / 1e6, col = "#DAC4F7", las = 2, cex.names = 0.8)
@@ -377,9 +424,20 @@ deseq.volcano <- function(res, datasetName) {
                          # Set cutoffs
                          pCutoff = 0.05, FCcutoff = 2))
 }
-
-deseq.volcano(res = res_CA1_drug, datasetName = "CA1")
 ```
+
+```{r}
+deseq.volcano(res = res_CA1_drug, datasetName = "CA1")
+
+```
+
+```{r fig-sub, fig.cap = "Volcano plot showing the gene expression resulting from the comparison of patients on and off drugs"}
+deseq.volcano(res = res_CA1_drug, datasetName = "CA1")
+deseq.volcano(res = res_CA3_drug, datasetName = "CA3")
+deseq.volcano(res = res_DG_drug, datasetName = "DG")
+
+```
+
 Figure 16: Volcano plot showing the gene expression of subfield CA1 resulting from the comparison of patients on and off drugs
 The expression values are plotted with the -log10 p-value on the y-axis and the log fold-change on the x-axis. The plot is separated into according to the set thresholds with a different color for each section. The grey area shows the genes with expressions below both thresholds, the green area shows the genes with expressions only above the FC threshold, the genes with only high p-values are shown in blue, and in red, the significant DEG's or the genes with expressions above both thresholds are shown.
 
@@ -391,7 +449,7 @@ Figure 17: Volcano plot showing the gene expression of subfield CA3 resulting fr
 ```{r}
 deseq.volcano(res = res_DG_drug, datasetName = "DG")
 ```
-Figure 17: Volcano plot showing the gene expression of subfield DG resulting from the comparison of patients on and off drugs
+Figure 18: Volcano plot showing the gene expression of subfield DG resulting from the comparison of patients on and off drugs
 
 ```{r}
 pval_threshold <- 0.05
@@ -476,23 +534,6 @@ library(DOSE)
 edo <- enrichDGN(entrez_ID)
 ```
 
-
-```{r}
-library(enrichplot)
-barplot(edo, showCategory=20) 
-```
-```{r}
-ggo <- groupGO(gene     = entrez_ID,
-               OrgDb    = org.Hs.eg.db,
-               ont      = "CC",
-               level    = 3,
-               readable = TRUE)
-
-head(ggo)
-
-goplot(ggo)
-
-```
 
 MTRNR2 gene stands out in the volcano plot of each comparison. This is a neuroprotective gene that protects against neuronal death induced by alzheimer. Often shows higher expression in Schizophrenia cases than in control subjects. Was not mentioned in the article.
 
