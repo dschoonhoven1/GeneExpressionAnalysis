@@ -384,14 +384,15 @@ Figure 16: Volcano plot showing the gene expression of subfield CA1 resulting fr
 The expression values are plotted with the -log10 p-value on the y-axis and the log fold-change on the x-axis. The plot is separated into according to the set thresholds with a different color for each section. The grey area shows the genes with expressions below both thresholds, the green area shows the genes with expressions only above the FC threshold, the genes with only high p-values are shown in blue, and in red, the significant DEG's or the genes with expressions above both thresholds are shown.
 
 ```{r}
-deseq.volcano(res = res_CA3_drug, datasetName = "CA3")
+2 <-deseq.volcano(res = res_CA3_drug, datasetName = "CA3")
 ```
 Figure 17: Volcano plot showing the gene expression of subfield CA3 resulting from the comparison of patients on and off drugs
 
 ```{r}
-deseq.volcano(res = res_DG_drug, datasetName = "DG")
+1 <- deseq.volcano(res = res_DG_drug, datasetName = "DG")
 ```
 Figure 17: Volcano plot showing the gene expression of subfield DG resulting from the comparison of patients on and off drugs
+
 
 ```{r}
 pval_threshold <- 0.05
@@ -482,6 +483,7 @@ library(enrichplot)
 barplot(edo, showCategory=20) 
 ```
 ```{r}
+library(clusterProfiler)
 ggo <- groupGO(gene     = entrez_ID,
                OrgDb    = org.Hs.eg.db,
                ont      = "CC",
@@ -498,6 +500,22 @@ MTRNR2 gene stands out in the volcano plot of each comparison. This is a neuropr
 
 
 write.table(CA3_drug.degs, file = "CA3_degs.txt", row.names = F, quote = F)
+
+```{r}
+GO_data <- "GO.txt"
+GO_CA3 <- read.table(file = GO_data, header = TRUE, sep = "\t")
+head(GO_CA3)
+
+GO_CA3$log10 <- -log10(GO_CA3$q.value.FDR.B.H)
+
+names <- GO_CA3$Name
+
+GO_CA3 %>%
+  ggplot(aes(x= log10, y= Hit.Count.in.Query.List, color = Category, label = Name))+
+  geom_point()
+```
+
+
 
 references
 
