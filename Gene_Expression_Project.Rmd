@@ -418,6 +418,10 @@ edo <- enrichDGN(entrez_ID)
 library(enrichplot)
 barplot(edo, showCategory=20) 
 ```
+<<<<<<< HEAD
+=======
+
+>>>>>>> d38c595e93fb39de05b4841b24a1b564d0b26ee4
 
 MTRNR2 gene stands out in the volcano plot of each comparison. This is a neuroprotective gene that protects against neuronal death induced by alzheimer. Often shows higher expression in Schizophrenia cases than in control subjects. Was not mentioned in the article.
 
@@ -426,17 +430,47 @@ write.table(CA3_drug.degs, file = "CA3_degs.txt", row.names = F, quote = F)
 
 
 ```{r}
-GO_data <- "GO.txt"
-GO_CA3 <- read.table(file = GO_data, header = TRUE, sep = "\t", dec = ".")
+GO_CA1_data <- "CA1_SZ_CTL.txt"
+GO_CA1 <- read.delim(GO_CA1_data)
+#read.table(file = GO_data, header = TRUE, sep = "\t")
+head(GO_CA1)
+
+GO_CA1$log10 <- -log10(GO_CA1$q.value.Bonferroni)
+
+GO_CA1 %>%
+  filter(q.value.Bonferroni < 0.05) %>%
+  ggplot(aes(x= log10, y= Hit.Count.in.Query.List, color = Category, label = Name))+
+  geom_point() +geom_text_repel(hjust=0, vjust=0, size = 3, max.overlaps = Inf, segment.size = 0.2)+
+  theme_minimal()
+```
+```{r}
+GO_CA3_data <- "CA3_SZ_CTL.txt"
+GO_CA3 <- read.delim(GO_CA3_data)
+#read.table(file = GO_data, header = TRUE, sep = "\t")
 head(GO_CA3)
 
-GO_CA3$log10 <- -log10(GO_CA3$q.value.FDR.B.H)
-
-names <- GO_CA3$Name
+GO_CA3$log10 <- -log10(GO_CA3$q.value.Bonferroni)
 
 GO_CA3 %>%
+  filter(q.value.Bonferroni < 0.05) %>%
   ggplot(aes(x= log10, y= Hit.Count.in.Query.List, color = Category, label = Name))+
-  geom_point()
+  geom_point() +geom_text_repel(hjust=0, vjust=0, size = 3, max.overlaps = Inf, segment.size = 0.2)+
+  theme_minimal()
+```
+
+```{r}
+GO_DG_data <- "DG_SZ_CTL.txt"
+GO_DG <- read.delim(GO_DG_data)
+#read.table(file = GO_data, header = TRUE, sep = "\t")
+head(GO_DG)
+
+GO_DG$log10 <- -log10(GO_DG$q.value.Bonferroni)
+
+GO_DG %>%
+  filter(q.value.Bonferroni < 0.05) %>%
+  ggplot(aes(x= log10, y= Hit.Count.in.Query.List, color = Category, label = Name))+
+  geom_point() +geom_text_repel(hjust=0, vjust=0, size = 3, max.overlaps = Inf, segment.size = 0.2)+
+  theme_minimal()
 ```
 
 
