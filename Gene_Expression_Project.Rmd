@@ -3,8 +3,8 @@ title: "Gene Expression Project"
 author: "Fenny and Daniëlle"
 date: '2023-04-26'
 output:
-  pdf_document: default
   html_document: default
+  pdf_document: default
 ---
 
 ```{r setup, include=FALSE}
@@ -21,6 +21,7 @@ library(scales)
 library(ggplot2)
 library('DESeq2')
 library('PoiClaClu')
+library(knitr)
 ```
 
 The count data is loaded into R.
@@ -84,33 +85,7 @@ counts_DG_tidy <- pivot_longer(data = counts_DG,
 head(counts_DG_tidy)
 ```
 
-
-```{r}
-counts_CA1_tidy$log2 <- log2(counts_CA1_tidy$value + 1)
-counts_CA3_tidy$log2 <- log2(counts_CA3_tidy$value + 1)
-counts_DG_tidy$log2 <- log2(counts_DG_tidy$value + 1)
-
-ggplot(data = counts_CA1_tidy, mapping = aes(x = sample, y = log2))+
-geom_boxplot()+
-  scale_x_discrete(guide = guide_axis(angle = 90))
-
-sums <- colSums(counts_CA1)/1e6
-CA1_sequence_depth = data.frame(sample=names(sums), depth=sums)
-CA1_sequence_depth %>% ggplot(mapping = aes(x = sample, y=sums)) + geom_col() +
-   scale_x_discrete(guide = guide_axis(angle = 90))
-
-ggplot(data = counts_CA3_tidy, mapping = aes(x = sample, y = log2))+
-geom_boxplot()+
-  scale_x_discrete(guide = guide_axis(angle = 90))
-
-
-
-ggplot(data = counts_DG_tidy, mapping = aes(x = sample, y = log2))+
-geom_boxplot()+
-scale_x_discrete(guide = guide_axis(angle = 90))
-```
-
-The data is separated in control and case groups for each subfield and visualized by creating a boxplot for each group (figure 1-6).
+The data is separated in control and case groups for each subfield and visualized by creating a boxplot for each group (figure 1).
 
 ```{r}
 control_ca1 <- c(1:13)
@@ -119,44 +94,23 @@ control_ca3 <- c(27:39)
 case_ca3 <- c(40:52)
 control_dg <- c(53:65)
 case_dg <- c(66:78)
-
-par(cex = 0.8)
-boxplot(log2(counts[control_ca1] + 1), outline = T, cex.names = 0.2, col = "green", las = 2)
 ```
-Figure 1: Raw counts boxplot control group CA1
-
-```{r}
-par(cex = 0.8)
-boxplot(log2(counts[case_ca1] + 1), outline = T, cex.names = 0.2, col = "blue", las = 2)
+```{r, fig.cap = "Figure 1: Raw counts boxplots", out.width = "100%", fig.height=8}
+par(mfcol = c(3,2))
+par(cex = 0.5)
+if (identical(knitr::pandoc_to(), 'latex')) knit_hooks$set(plot = hook_plot_tex)
+boxplot(log2(counts[control_ca1] + 1), outline = T, col = "green", las = 2, main = "A. CA1 Control", adj = 0)
+boxplot(log2(counts[case_ca1] + 1), outline = T, col = "blue", las = 2, main = "B. CA1 Case", adj = 0)
+boxplot(log2(counts[control_ca3] + 1), outline = T, col = "grey", las = 2, main = "C. CA1 Control", adj = 0)
+boxplot(log2(counts[case_ca3] + 1), outline = T, col = "cyan", las = 2, main = "D. CA1 Case", adj = 0)
+boxplot(log2(counts[control_dg] + 1), outline = T, col = "red", las = 2, main = "E. CA1 Control", adj = 0)
+boxplot(log2(counts[case_dg] + 1), outline = T, col = "yellow", las = 2, main = "F. CA1 Case", adj = 0)
 ```
-Figure 2: Raw counts boxplot case group CA1
 
-```{r}
-par(cex = 0.8)
-boxplot(log2(counts[control_ca3] + 1), outline = T, cex.names = 0.2, col = "grey", las = 2)
-```
-Figure 3: Raw counts boxplot control group CA3
-
-```{r}
-par(cex = 0.8)
-boxplot(log2(counts[case_ca3] + 1), outline = T, cex.names = 0.2, col = "cyan", las = 2)
-```
-Figure 4: Raw counts boxplot case group CA3
-
-```{r}
-par(cex = 0.8)
-boxplot(log2(counts[control_dg] + 1), outline = T, cex.names = 0.2, col = "red", las = 2)
-```
-Figure 5: Raw counts boxplot control group DG
-
-```{r}
-par(cex = 0.8)
-boxplot(log2(counts[case_dg] + 1), outline = T, col = "yellow", las = 2)
-```
-Figure 6: Raw counts boxplot case group DG
+From the top down, two plots of subfields CA1, CA3 and DG are shown with the control groups on the left and the case groups on the right.
 
 A density plot is made for all the samples to visualize the distribution of the log2 of the count data.
-```{r}
+```{r, fig.cap="Figure 2: Density plot of count distribution for all samples"}
 myColors <- hue_pal()(4)
 
 plotDensity(log2(counts + 0.1), col=rep(myColors, each=3),
@@ -167,38 +121,20 @@ legend('topright', names(counts), lty=c(1:ncol(counts)),
        col=rep(myColors, each=3))
 abline(v=-1.5, lwd=1, col='red', lty=2)
 ```
-Figure 7: Density plot of count distribution for all samples 
 
 Barplots are created for each control and case group in which the total raw count is shown of each sample.
-```{r}
-barplot(colSums(counts[control_ca1]) / 1e6, col = "#D6F6DD", las = 2, cex.names = 0.8)
-```
-Figure 8: Barplot showing the total reads per million for each subject in the control group for subfield CA1
 
-```{r}
-barplot(colSums(counts[case_ca1]) / 1e6, col = "#DAC4F7", las = 2, cex.names = 0.8)
+```{r, fig.cap="Figure 3: Barplot showing the total raw reads count per million for each sample", fig.subcap=c("CA1 Control", "CA1 Case", "CA3 Control", "CA3 Case", "DG Control", "DG Case"), out.width = "100%", fig.height=8}
+par(mfcol = c(3, 2))
+barplot(colSums(counts[control_ca1]) / 1e6, col = "#D6F6DD", las = 2, cex.names = 0.8, main = "A. CA1 Control", adj = 0)
+barplot(colSums(counts[case_ca1]) / 1e6, col = "#DAC4F7", las = 2, cex.names = 0.8, main = "B. CA1 Case", adj = 0)
+barplot(colSums(counts[control_ca3]) / 1e6, col = "#CCCCCC", las = 2, cex.names = 0.8, main = "C. CA3 Control", adj = 0)
+barplot(colSums(counts[case_ca3]) / 1e6, col = "#ACECF7", las = 2, cex.names = 0.8, main = "D. CA3 Case", adj = 0)
+barplot(colSums(counts[control_dg]) / 1e6, col = "#F4989C", las = 2, cex.names = 0.8, main = "E. DG Control", adj = 0)
+barplot(colSums(counts[case_dg]) / 1e6, col = "#EBD2B4", las = 2, cex.names = 0.8, main = "F. DG Case", adj = 0)
 ```
-Figure 9: Barplot showing the total reads per million for each subject in the case group for subfield CA1
 
-```{r}
-barplot(colSums(counts[control_ca3]) / 1e6, col = "#CCCCCC", las = 2, cex.names = 0.8)
-```
-Figure 10: Barplot showing the total reads per million for each subject in the control group for subfield CA3
-
-```{r}
-barplot(colSums(counts[case_ca3]) / 1e6, col = "#ACECF7", las = 2, cex.names = 0.8)
-```
-Figure 11: Barplot showing the total reads per million for each subject in the case group for subfield CA3
-
-```{r}
-barplot(colSums(counts[control_dg]) / 1e6, col = "#F4989C", las = 2, cex.names = 0.8)
-```
-Figure 12: Barplot showing the total reads per million for each subject in the control group for subfield DG
-
-```{r}
-barplot(colSums(counts[case_dg]) / 1e6, col = "#EBD2B4", las = 2, cex.names = 0.8)
-```
-Figure 13: Barplot showing the total reads per million for each subject in the case group for subfield DG
+The plots show the CA1, CA3 and DG subfields from the top down, and the control groups are displayed on the left while the case groups are displayed on the right. The numbers on the y-axis indicate the total number of reads per million for each sample. The sample names can be found on the x-axis. For the majority of the reads, approximately 40 to 60 million reads were found. However, at least 10 million reads were found for every sample except for sample DG_SZ_0841 in figure 3F, which had around 5 million reads.
 
 ```{r}
 #annotation <- data.frame(subfield = factor(rep(1:3, each = 26), 
@@ -246,7 +182,7 @@ names(mdsPoisData) <- c('x_coord', 'y_coord')
 ```
 
 The annotated data is separated into groups depending on whether the sample was obtained from a control or case subject, whether they were on or off medication, and the hippocampal subfield of interest (CA1, CA3 or DG). These groups were labeled accordingly and used to plot a graph showing the MDS data.
-```{r}
+```{r, fig.cap="Figure 4: Plot showing Multi-Dimensional Scaling of Poisson Distance for all samples"}
 groups <- factor(rep(1:6, each=13), 
                  labels = c("CA1_CTL", "CA1_SZ", "CA3_CTL", "CA3_SZ", "DG_CTL", "DG_SZ"))
 coldata <- names(counts)
@@ -255,15 +191,15 @@ color_palette <- c("#D6F6DD", "#DAC4F7", "#CCCCCC", "#ACECF7", "#F4989C", "#EBD2
 
 # Create the plot using ggplot
 
-ggplot(mdsPoisData, aes(x_coord, y_coord, color = groups, label = coldata)) + 
-  geom_text(size = 3) +
+ggplot(mdsPoisData, aes(x_coord, y_coord, color = groups, label = ".")) + 
+  geom_text(size = 10) +
   scale_colour_manual(values=c("green", "blue", "grey", "cyan", "red", "yellow"))+
   ggtitle('Multi Dimensional Scaling') +
   labs(x = "Poisson Distance", y = "Poisson Distance") +
   theme_bw()+
   labs(caption = "Figure: MDS plot")
 ```
-Figure 14: Plot showing Multi-Dimensional Scaling of Poisson Distance for all samples
+All samples were plotted around the same area ex
 
 A dataframe without sample CA3_CTL_0885 is made and the previous steps for the visualization in the MDS plot were repeated.
 ```{r}
@@ -380,18 +316,18 @@ deseq.volcano <- function(res, datasetName) {
 
 deseq.volcano(res = res_CA1_drug, datasetName = "CA1")
 ```
-Figure 16: Volcano plot showing the gene expression of subfield CA1 resulting from the comparison of patients on and off drugs
+Figure 5: Volcano plot showing the gene expression of subfield CA1 resulting from the comparison of patients on and off drugs
 The expression values are plotted with the -log10 p-value on the y-axis and the log fold-change on the x-axis. The plot is separated into according to the set thresholds with a different color for each section. The grey area shows the genes with expressions below both thresholds, the green area shows the genes with expressions only above the FC threshold, the genes with only high p-values are shown in blue, and in red, the significant DEG's or the genes with expressions above both thresholds are shown.
 
 ```{r}
-2 <-deseq.volcano(res = res_CA3_drug, datasetName = "CA3")
+deseq.volcano(res = res_CA3_drug, datasetName = "CA3")
 ```
-Figure 17: Volcano plot showing the gene expression of subfield CA3 resulting from the comparison of patients on and off drugs
+Figure 6: Volcano plot showing the gene expression of subfield CA3 resulting from the comparison of patients on and off drugs
 
 ```{r}
-1 <- deseq.volcano(res = res_DG_drug, datasetName = "DG")
+deseq.volcano(res = res_DG_drug, datasetName = "DG")
 ```
-Figure 17: Volcano plot showing the gene expression of subfield DG resulting from the comparison of patients on and off drugs
+Figure 7: Volcano plot showing the gene expression of subfield DG resulting from the comparison of patients on and off drugs
 
 
 ```{r}
@@ -413,7 +349,7 @@ library(gplots)
 
 venn( list(CA1=CA1_drug.degs,CA3=CA3_drug.degs,DG=DG_drug.degs ) )
 ```
-Figure: Venn diagram showing the overlap of DEG's between schizophrenia patients ON and OFF medication in the three hippocampal subfields: CA1, CA3 and DG
+Figure 8: Venn diagram showing the overlap of DEG's between schizophrenia patients ON and OFF medication in the three hippocampal subfields: CA1, CA3 and DG
 
 
 ```{r}
@@ -481,19 +417,6 @@ edo <- enrichDGN(entrez_ID)
 ```{r}
 library(enrichplot)
 barplot(edo, showCategory=20) 
-```
-```{r}
-library(clusterProfiler)
-ggo <- groupGO(gene     = entrez_ID,
-               OrgDb    = org.Hs.eg.db,
-               ont      = "CC",
-               level    = 3,
-               readable = TRUE)
-
-head(ggo)
-
-goplot(ggo)
-
 ```
 
 MTRNR2 gene stands out in the volcano plot of each comparison. This is a neuroprotective gene that protects against neuronal death induced by alzheimer. Often shows higher expression in Schizophrenia cases than in control subjects. Was not mentioned in the article.
