@@ -123,6 +123,7 @@ case_dg <- c(66:78)
 par(cex = 0.8)
 boxplot(log2(counts[control_ca1] + 1), outline = T, cex.names = 0.2, col = "green", las = 2)
 ```
+<<<<<<< HEAD
 Figure 1: Raw counts boxplot control group CA1
 
 ```{r}
@@ -134,9 +135,22 @@ Figure 2: Raw counts boxplot case group CA1
 ```{r}
 par(cex = 0.8)
 boxplot(log2(counts[control_ca3] + 1), outline = T, cex.names = 0.2, col = "grey", las = 2)
+=======
+```{r, fig.cap = "Figure 1: Raw counts boxplots", out.width = "100%", fig.height=8}
+par(mfcol = c(3,2))
+par(cex = 0.5)
+if (identical(knitr::pandoc_to(), 'latex')) knit_hooks$set(plot = hook_plot_tex)
+boxplot(log2(counts[control_ca1] + 1), outline = T, col = "green", las = 2, main = "A. CA1 Control", adj = 0)
+boxplot(log2(counts[control_ca3] + 1), outline = T, col = "grey", las = 2, main = "C. CA3 Control", adj = 0)
+boxplot(log2(counts[control_dg] + 1), outline = T, col = "red", las = 2, main = "E. DG Control", adj = 0)
+boxplot(log2(counts[case_ca1] + 1), outline = T, col = "blue", las = 2, main = "B. CA1 Case", adj = 0)
+boxplot(log2(counts[case_ca3] + 1), outline = T, col = "cyan", las = 2, main = "D. CA3 Case", adj = 0)
+boxplot(log2(counts[case_dg] + 1), outline = T, col = "yellow", las = 2, main = "F. DG Case", adj = 0)
+>>>>>>> 1f2b503b27c71495820f6c914f8bc6afe37eff3a
 ```
 Figure 3: Raw counts boxplot control group CA3
 
+<<<<<<< HEAD
 ```{r}
 par(cex = 0.8)
 boxplot(log2(counts[case_ca3] + 1), outline = T, cex.names = 0.2, col = "cyan", las = 2)
@@ -154,6 +168,9 @@ par(cex = 0.8)
 boxplot(log2(counts[case_dg] + 1), outline = T, col = "yellow", las = 2)
 ```
 Figure 6: Raw counts boxplot case group DG
+=======
+From the top down, two plots of subfields CA1, CA3 and DG are shown with the control groups on the left and the case groups on the right. 
+>>>>>>> 1f2b503b27c71495820f6c914f8bc6afe37eff3a
 
 A density plot is made for all the samples to visualize the distribution of the log2 of the count data.
 ```{r}
@@ -190,8 +207,19 @@ barplot(colSums(counts[case_ca3]) / 1e6, col = "#ACECF7", las = 2, cex.names = 0
 ```
 Figure 11: Barplot showing the total reads per million for each subject in the case group for subfield CA3
 
+<<<<<<< HEAD
 ```{r}
 barplot(colSums(counts[control_dg]) / 1e6, col = "#F4989C", las = 2, cex.names = 0.8)
+=======
+```{r, fig.cap="Figure 3: Barplot showing the total raw reads count per million for each sample", fig.subcap=c("CA1 Control", "CA1 Case", "CA3 Control", "CA3 Case", "DG Control", "DG Case"), out.width = "100%", fig.height=8}
+par(mfcol = c(3, 2))
+barplot(colSums(counts[control_ca1]) / 1e6, col = "#D6F6DD", las = 2, cex.names = 0.8, main = "A. CA1 Control", adj = 0)
+barplot(colSums(counts[control_ca3]) / 1e6, col = "#CCCCCC", las = 2, cex.names = 0.8, main = "C. CA3 Control", adj = 0)
+barplot(colSums(counts[control_dg]) / 1e6, col = "#F4989C", las = 2, cex.names = 0.8, main = "E. DG Control", adj = 0)
+barplot(colSums(counts[case_ca1]) / 1e6, col = "#DAC4F7", las = 2, cex.names = 0.8, main = "B. CA1 Case", adj = 0)
+barplot(colSums(counts[case_ca3]) / 1e6, col = "#ACECF7", las = 2, cex.names = 0.8, main = "D. CA3 Case", adj = 0)
+barplot(colSums(counts[case_dg]) / 1e6, col = "#EBD2B4", las = 2, cex.names = 0.8, main = "F. DG Case", adj = 0)
+>>>>>>> 1f2b503b27c71495820f6c914f8bc6afe37eff3a
 ```
 Figure 12: Barplot showing the total reads per million for each subject in the control group for subfield DG
 
